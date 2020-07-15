@@ -6,7 +6,7 @@
 #    By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/11/01 14:39:55 by lmoulin           #+#    #+#              #
-#    Updated: 2020/07/14 17:03:06 by lmoulin          ###   ########.fr        #
+#    Updated: 2020/07/15 14:05:59 by lmoulin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,10 +21,10 @@ CPP_FLAGS = -Iinclude
 NAME = libftprintf.a
 
 SRC_PATH = ./
-LIB_PATH = ./libft
+LIB_PATH = ../libft
 INC_PATH = ../includes
 OBJ_PATH = ./
-OBJLIB_PATH = ./libft
+OBJLIB_PATH = ../libft
 
 SRC_NAME =	ft_printf.c ft_annexe.c ft_arg.c ft_arg_2.c ft_flags.c \
 			ft_flags_2.c ft_exception.c

@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/15 13:51:57 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/15 16:26:13 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,9 +49,26 @@ void		ft_cd(char *buf, char *dir)
 	chdir(&buf[i]);
 }
 
-void		ft_echo(char *buf)
+void		ft_pwd(char *buf)
 {
+	char	*pwd;
+	int		i;
 
+	i = 0;
+	while (buf[i] == ' ')
+		i++;
+/*	if (buf[i] != '\0')
+	{
+		ft_printf(1, "pwd: too many arguments\n");
+		return;
+	}
+*/	if (!(pwd = malloc(sizeof(char) * BUF_SIZE + 1)))
+		return;
+	pwd = getcwd(pwd, BUF_SIZE);
+	pwd[BUF_SIZE] = '\0';
+	ft_printf(1, "%s\n", pwd);
+	free(pwd);
+	pwd = NULL;
 }
 
 int main(int ac, char **av, char **env)
@@ -76,8 +93,10 @@ int main(int ac, char **av, char **env)
 			i++;
 		if (!ft_strncmp(&buf[i], "cd ", ft_strlen("cd ")))
 			ft_cd(&buf[i + 3], dir);
-		if (!ft_strncmp(&buf[i], "echo ", ft_strlen("echo ")))
-			ft_echo(&buf[i]);
+		if (ft_strncmp(&buf[i], "pwd", ft_strlen("pwd")))
+			ft_pwd(&buf[i + 3]);
+		free(dir);
+		dir = NULL;
 	}
 
 }
