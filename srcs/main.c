@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/16 20:26:58 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/17 17:17:57 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <signal.h>
 #include "stdio.h"
 # define BUF_SIZE 2048
 # define USER env[18]
@@ -105,7 +106,7 @@ void		ft_pwd(char *buf)
 	free(pwd);
 	pwd = NULL;
 }
-
+/*
 char		*ft_check_export(char *buf, char **var)
 {
 	int		i;
@@ -148,11 +149,40 @@ void		ft_export(char *buf, char **env)
 		while (env[k])
 		{
 			ft_printf(1, "%s\n", env[k++]);
-			return;
+			return ;
 		}
 	ft_check_export(buf, new);
 
 }
+*/
+void		ft_env(char *buf, char **env)
+{
+	int		i;
+
+	i = 0;
+	while (buf[i] == ' ')
+		i++;
+	if (buf[i] != '\n' || (buf[i] == '\n' && buf[i + 1] != '\0'))
+	{
+		if (i == 0)
+			return ((void)ft_printf(1, "minishell: command not found env%s", buf));
+		ft_printf(1, "env: take no argument\n");
+		return ;
+	}
+	i = 0;
+	while (env[i])
+		ft_printf(1, "%s\n", env[i++]);
+}
+
+void		ft_get_signal(int code)
+{
+	if (code == SIGINT)
+		//Pas d'exit, relancer une affiche de prompt
+	if (code == SIGQUIT)
+		ft_printf(1, "exit: signal code %d\n", code);
+	exit(code);
+}
+
 
 int			main(int ac, char **av, char **env)
 {
@@ -162,13 +192,13 @@ int			main(int ac, char **av, char **env)
 	char	buf[BUF_SIZE + 1];
 	char	*dir;
 
-	i = -1;
-	while (env[++i])
-		printf("env[%d] = %s\n", i, env[i]);
-	i = 0;
-
 	while (ft_strncmp(buf, "exit", ft_strlen("exit")))
 	{
+		signal(SIGABRT, ft_get_signal);
+		signal(SIGQUIT, ft_get_signal);
+		signal(SIGINT, ft_get_signal);
+		signal(SIGSEGV, ft_get_signal);
+		signal(SIGTERM, ft_get_signal);
 		dir = getcwd(dir, BUF_SIZE);
 		i = ft_strlen(dir);
 		while (i >= 0 && dir[i] != '/')
@@ -183,8 +213,10 @@ int			main(int ac, char **av, char **env)
 			ft_cd(&buf[i + 2]);
 		else if (!ft_strncmp(&buf[i], "pwd", ft_strlen("pwd")))
 			ft_pwd(&buf[i + 3]);
-		else if (!ft_strncmp(&buf[i], "export ", ft_strlen("export")))
-			ft_export(&buf[i + ft_strlen("export")], env);
+	//	else if (!ft_strncmp(&buf[i], "export ", ft_strlen("export")))
+	//		ft_export(&buf[i + ft_strlen("export")], env);
+		else if (!ft_strncmp(&buf[i], "env", ft_strlen("env")))
+			ft_env(&buf[i + ft_strlen("env")], env);
 		else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
 			break;
 		else
