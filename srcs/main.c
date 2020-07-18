@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/18 16:10:31 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/18 17:00:13 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,55 +97,11 @@ void		ft_pwd(char *buf)
 	free(pwd);
 	pwd = NULL;
 }
-/*
-char		*ft_check_export(char *buf, char **var)
-{
-	int		i;
-	int		save;
-	int		len;
 
-	i = 0;
-	len = 0;
-	while (buf[i])
-	{
-		while (buf[i] == ' ')
-			i++;
-		if (ft_isprint(buf[i]))
-		{
-			save = i;
-			while (buf[i] && ft_isalnum(buf[i]))
-				i++;
-			
-			if (!(var = malloc(sizeof(char) * (i - save + 1))))
-				return (NULL);
-			ft_strlcpy(var, &buf[save], i - save);
-		}
-		if (buf[i] == '=' && ft_isalpha(buf[i - 1]))
-			;
-	}
+void		ft_export(char	*buf)
+{
 }
 
-void		ft_export(char *buf, char **env)
-{
-	int		i;
-	int		k;
-	char	*var;
-	char	**new;
-
-	i = 0;
-	k = 0;
-	while (buf[i] == ' ')
-		i++;
-	if (buf[i] == '\n' && buf[i + 1] == '\0')
-		while (env[k])
-		{
-			ft_printf(1, "%s\n", env[k++]);
-			return ;
-		}
-	ft_check_export(buf, new);
-
-}
-*/
 void		ft_env(char *buf, char **env)
 {
 	int		i;
@@ -302,13 +258,31 @@ void		ft_get_signal(int code)
 	exit(code);
 }
 
+int			ft_copy_env(const char **env)
+{
+	int		i;
+	int		len;
 
-int			main(int ac, char **av, char **env)
+	len = 0;
+	while (env[len])
+		len++;
+	if (!(g_shell.env = malloc(sizeof(char *) * (len + 1))))
+		return (0);
+	i = -1;
+	while (env[++i])
+		g_shell.env[i] = ft_strdup(env[i]);
+	g_shell.env[i] = NULL;
+	return (1);
+}
+
+int			main(int ac, char **av, const char **env)
 {
 	int		ret;
 	int		i;
 	int		pos;
 
+	if (!(ft_copy_env(env)))
+		return (-1);
 	while (ft_strncmp(g_shell.buf, "exit", ft_strlen("exit")))
 	{
 		signal(SIGABRT, ft_get_signal);
