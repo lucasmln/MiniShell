@@ -44,6 +44,7 @@ char			*ft_strdup(const char *s1);
 char			*ft_strjoin(char const *s1, char const *s2);
 char			*ft_strtrim(const char *s1, const char *set);
 char			*ft_substr(char const *s, unsigned int start, size_t len);
+int				ft_strcmp(const char *s1, const char *s2);
 char			*ft_itoa(long n);
 void			ft_putstr_fd(char *s, int fd);
 void			ft_putchar_fd(char c, int fd);
