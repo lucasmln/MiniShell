@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/18 17:00:13 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/22 18:42:16 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,95 @@ void		ft_env(char *buf, char **env)
 		ft_printf(1, "%s\n", env[i++]);
 }
 
+void		ft_error_export(char *buf)
+{
+	ft_printf(1, "export: not an identifier: %s\n", buf);
+}
+
+void		ft_sort_env(char **env)
+{
+	int		i;
+	char	*tmp;
+
+	i = -1;
+	while (g_shell.sort_env[++i + 1])
+	{
+		if (ft_strcmp(g_shell.sort_env[i], g_shell.sort_env[i + 1]) > 0)
+		{
+			tmp = g_shell.sort_env[i + 1];
+			g_shell.sort_env[i + 1] = g_shell.sort_env[i];
+			g_shell.sort_env[i] = tmp;
+			i = i - 1 >= -1 ? -1 : i - 1;
+		}
+	}
+}
+
+void		ft_add_var(char *buf, int *check, int i, int indice)
+{
+	int		k;
+	char	**new;
+	char	*var;
+
+	k = 0;
+	if (indice == 1)
+		while (buf[i] && buf[i] != ' ')
+			i++;
+		if (!(var = malloc(sizeof(char) * (i + 2))))
+			return ;
+		if (!(new = malloc(sizeof(char *) * (++g_shell.len_env + 1))))
+			return ;
+		ft_strlcpy(var, buf, i + 1);
+		if (indice == 0)
+			var = ft_str_add(var, "=''");
+		new[g_shell.len_env] = NULL;
+		while (g_shell.sort_env[k])
+		{
+			new[k] = ft_strdup(g_shell.sort_env[k]);
+			free(g_shell.sort_env[k]);
+			g_shell.sort_env[k] = NULL;
+			k++;
+		}
+		new[k] = var;
+		free(g_shell.sort_env);
+		g_shell.sort_env = new;
+}
+
+void		ft_get_var(int i, int check)
+{
+	while (g_shell.output[i])
+	{
+		if (!(ft_isalpha(g_shell.output[i]) || (i == 0 &&
+				ft_isdigit(g_shell.output[i])) || g_shell.output[i] == '_' || (i > 0 && g_shell.output[i] == '=')))
+			check = 1;
+		if (check == 0 && (g_shell.output[i] == ' ' || g_shell.output[i] == '\n'
+					|| !g_shell.output[i]) && i > 0)
+		{
+			ft_add_var(g_shell.output, &check, i, 0);
+			while (g_shell.output[i] == ' ')
+				i++;
+			ft_strlcpy(g_shell.output, &g_shell.output[i], ft_strlen(g_shell.output));
+			i = -1;
+		}
+		else if (check == 0 && g_shell.output[i] == '=' && i > 0)
+		{
+			ft_printf(1, "hey\n");
+			ft_add_var(g_shell.output, &check, i, 1);
+		}
+			ft_printf(1, "check = %d\n", check);
+		i++;
+	}
+		if (check == 0 && (g_shell.output[i] == ' ' || g_shell.output[i] == '\n'
+					|| !g_shell.output[i]) && i > 0)
+			ft_add_var(g_shell.output, &check, i, 1);
+
+
+}
+
 void		ft_export(char *buf)
 {
 	int		i;
+	int		check;
+	char	quote[1];
 
 	i = 0;
 	while (buf[i] == ' ')
@@ -44,7 +130,33 @@ void		ft_export(char *buf)
 			ft_printf(1, "%s\n", g_shell.sort_env[i++]);
 		return ;
 	}
-}
+	ft_strlcpy(buf, &buf[i], ft_strlen(&buf[i]));
+	ft_check_quote(buf, quote);
+	if (!ft_isalpha(g_shell.output[(i = 0)]) && g_shell.output[i] != '_')
+	{
+		ft_error_export(&g_shell.output[i]);
+		return ;
+	}
+	i = 0;
+	check = 0;
+	ft_get_var(i, check);
+/*	while (g_shell.output[i])
+	{
+		if (check == 0 && (g_shell.output[i] == ' ' || g_shell.output[i] == '\n'
+					|| !g_shell.output[i]) && i > 0)
+		{
+			ft_add_var(g_shell.output, &check, i, 0);
+			while (g_shell.output[i] == ' ')
+				i++;
+			ft_strlcpy(g_shell.output, &g_shell.output[i], ft_strlen(g_shell.output));
+			i = -1;
+		}
+		i++;
+	}
+		if (check == 0 && (g_shell.output[i] == ' ' || g_shell.output[i] == '\n'
+					|| !g_shell.output[i]) && i > 0)
+			ft_add_var(g_shell.output, &check, i, 0);
+*/}
 
 void		ft_get_signal(int code)
 {
@@ -67,6 +179,7 @@ int			ft_copy_env(const char **env)
 	len = 0;
 	while (env[len])
 		len++;
+	g_shell.len_env = len;
 	if (!(g_shell.env = malloc(sizeof(char *) * (len + 1))))
 		return (0);
 	if (!(g_shell.sort_env = malloc(sizeof(char *) * (len + 1))))
@@ -79,17 +192,7 @@ int			ft_copy_env(const char **env)
 	}
 	g_shell.env[i] = NULL;
 	g_shell.sort_env[i] = NULL;
-	i = -1;
-	while (g_shell.sort_env[++i + 1])
-	{
-		if (ft_strcmp(g_shell.sort_env[i], g_shell.sort_env[i + 1]) > 0)
-		{
-			tmp = g_shell.sort_env[i + 1];
-			g_shell.sort_env[i + 1] = g_shell.sort_env[i];
-			g_shell.sort_env[i] = tmp;
-			i = i - 1 >= -1 ? -1 : i - 1;
-		}
-	}
+	ft_sort_env(g_shell.sort_env);
 	return (1);
 }
 
@@ -99,10 +202,8 @@ int			ft_print_prompt()
 	int		ret;
 	int		pos;
 
-	signal(SIGABRT, ft_get_signal);
 	signal(SIGQUIT, ft_get_signal);
 	signal(SIGINT, ft_get_signal);
-	signal(SIGSEGV, ft_get_signal);
 	signal(SIGTERM, ft_get_signal);
 	g_shell.dir = getcwd(g_shell.dir, BUF_SIZE);
 	i = ft_strlen(g_shell.dir);

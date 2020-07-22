@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ls.c                                               :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/07/22 14:37:30 by lmoulin           #+#    #+#             */
+/*   Updated: 2020/07/22 15:09:57 by lmoulin          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/minishell.h"
 
 void		ft_ls(char *buf)
@@ -12,6 +24,7 @@ void		ft_ls(char *buf)
 	char			quote[1];
 	struct dirent	*ent;
 	struct dirent	**save;
+	struct stat		info;
 
 	i = 0;
 	ft_check_quote(buf, quote);
@@ -60,8 +73,11 @@ void		ft_ls(char *buf)
 				if (i % 3 == k)
 				{
 					o = len_max - ft_strlen(save[i + l]->d_name);
-					ft_printf(1, "%s", save[i + l]->d_name);
-					while (o-- >= 0)
+					if (!stat(save[i + l]->d_name, &info) && S_ISREG(info.st_mode))
+							ft_printf(1, RESET "%s", save[i + l]->d_name);
+					else
+						ft_printf(1, BOLDCYAN "%s", save[i + l]->d_name);
+					while (o-- >= -2)
 						ft_printf(1, " ");
 				}
 			if (save[i + l]->d_name[0] == '.' && flag == 0)
@@ -72,4 +88,5 @@ void		ft_ls(char *buf)
 		ft_printf(1, "\n");
 		k++;
 	}
+	closedir(dir);
 }
