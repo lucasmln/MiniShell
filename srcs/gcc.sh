@@ -1,1 +1,1 @@
-gcc libft.a libftprintf.a *.c ; ./a.out
+clear ; gcc libft.a libftprintf.a *.c ; ./a.out

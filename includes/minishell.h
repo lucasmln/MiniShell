@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/22 16:08:37 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/23 20:52:33 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,16 @@ char			*ft_str_add(char *s1, char const *s2);
 void			ft_check_quote(char *buf, char *type_quote);
 char			*ft_str_del_char(char *str, char c);
 void			ft_echo(char *buf);
+
+/*
+ ** export.c
+*/
+
+void			ft_env(char *buf, char **env);
+void			ft_error_export(char *buf);
+void			ft_sort_env(char **env);
+char			**ft_add_var(char **env, char *buf, int i);
+void			ft_export(char *buf);
 
 /*
  ** ls.c
