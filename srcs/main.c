@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/23 15:19:47 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/24 14:53:17 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ int			ft_copy_env(const char **env)
 	while (env[len])
 		len++;
 	g_shell.len_env = len;
+	g_shell.len_exp = len;
 	if (!(g_shell.env = malloc(sizeof(char *) * (len + 1))))
 		return (0);
 	if (!(g_shell.sort_env = malloc(sizeof(char *) * (len + 1))))

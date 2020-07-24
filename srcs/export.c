@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:15:40 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/23 21:00:01 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/24 16:36:57 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,30 +54,28 @@ void		ft_sort_env(char **env)
 	}
 }
 
-char		**ft_add_var(char **env, char *buf, int i)
+char		**ft_add_var(char **env, char *buf, int len_env, int i)
 {
 	int		k;
 	char	**new;
 	char	*var;
 
 	k = 0;
-	ft_printf(1, "start buf = %s\n", buf);
 	if (!(var = malloc(sizeof(char) * (i + 2))))
 		return NULL;
-	if (!(new = malloc(sizeof(char *) * (++g_shell.len_env + 1))))
+	if (!(new = malloc(sizeof(char *) * (len_env + 1))))
 		return NULL;
 	ft_strlcpy(var, buf, i + 1);
-	new[g_shell.len_env] = NULL;
+	new[len_env] = NULL;
 	while (env[k])
 	{
 		new[k] = ft_strdup(env[k]);
 		free(env[k]);
-		g_shell.sort_env[k] = NULL;
+		env[k] = NULL;
 		k++;
 	}
 	new[k] = var;
 	free(env);
-	ft_printf(1, "end buf = %s\n", buf);
 	return (new);
 }
 
@@ -97,15 +95,35 @@ void		ft_del_var(char **env, int len)
 	}
 }
 
+int			ft_find_var(char **env, char *var)
+{
+	int		i;
+	int		cmp;
+
+	i = 0;
+	cmp = 0;
+	while (env[i])
+	{
+		if (!ft_strncmp(env[i], var, ft_strlen(var)))
+			cmp++;
+		i++;
+	}
+	return (cmp);
+}
+
 void		ft_get_var(int i)
 {
 	int		k;
-	int		save_len;
+	int		save_len[2];
+	int		add[2];
+	char	*tmp;
 
-	save_len = g_shell.len_env;
+	save_len[0] = g_shell.len_exp;
+	save_len[1] = g_shell.len_env;
 	while (1)
 	{
-		ft_printf(1, "round, c = %c\n", g_shell.output[i]);
+		add[0] = 0;
+		add[1] = 0;
 		if (g_shell.output[i] == '=' && i == 0)
 		{
 			if (g_shell.output[i + 1] == ' ')
@@ -129,33 +147,64 @@ void		ft_get_var(int i)
 					k++;
 				g_shell.output[i + k] = '\0';
 				ft_printf(1, "minishell: %s not found\n", g_shell.output);
-				ft_del_var(g_shell.sort_env, save_len);
+				ft_del_var(g_shell.sort_env, save_len[1]);
+				ft_del_var(g_shell.env, save_len[0]);
 				break;
 			}
 			if (g_shell.output[i + 1] == ' ' || !g_shell.output[i + 1])
 			{
-				g_shell.sort_env = ft_add_var(g_shell.sort_env, g_shell.output, i);
-				g_shell.sort_env[g_shell.len_env - 1] =
-					ft_str_add(g_shell.sort_env[g_shell.len_env - 1], "=''");
+				add[0] = 1;
+				add[1] = 1;
+				g_shell.sort_env = ft_add_var(g_shell.sort_env, g_shell.output, ++g_shell.len_exp, i);
+				g_shell.env = ft_add_var(g_shell.env, g_shell.output, ++g_shell.len_env, i);
+				g_shell.env[g_shell.len_env - 1] =
+					ft_str_add(g_shell.env[g_shell.len_env - 1], "=");
+				g_shell.sort_env[g_shell.len_exp - 1] =
+					ft_str_add(g_shell.sort_env[g_shell.len_exp - 1], "=''");
+				tmp = g_shell.env[g_shell.len_env - 1];
+				g_shell.env[g_shell.len_env - 1] = g_shell.env[g_shell.len_env - 2];
+				g_shell.env[g_shell.len_env - 2] = tmp;
+			/*	if (ft_find_var(g_shell.sort_env, g_shell.sort_env[g_shell.len_exp - 1]) > 1)
+				{
+					ft_printf(1, "detected\n");
+					k = 0;
+					while (g_shell.sort_env[k] && ft_strncmp(g_shell.sort_env[k],
+					g_shell.sort_env[g_shell.len_exp -1], ft_strlen(g_shell.sort_env[g_shell.len_exp - 1])))
+						k++;
+					ft_printf(1, "k = %s\n", g_shell.sort_env[k]);
+					ft_printf(1, "len -1  = %s\n", g_shell.sort_env[g_shell.len_exp - 1]);
+					free(g_shell.sort_env[k]);
+					g_shell.sort_env[k] = NULL;
+					g_shell.sort_env[k] = ft_strdup(g_shell.sort_env[g_shell.len_exp - 1]);
+					free(g_shell.sort_env[g_shell.len_exp - 1]);
+					g_shell.sort_env[g_shell.len_exp - 1] = NULL;
+					g_shell.len_exp--;
+				}*/
 				while (g_shell.output[i] && g_shell.output[i] != ' ')
 					i++;
 			}
 			else
 			{
+				add[0] = 1;
+				add[1] = 1;
 				while (g_shell.output[i] && g_shell.output[i] != ' ')
 					i++;
-				g_shell.sort_env = ft_add_var(g_shell.sort_env, g_shell.output, i);
-				g_shell.env = ft_add_var(g_shell.sort_env, g_shell.output, i);
+				g_shell.sort_env = ft_add_var(g_shell.sort_env, g_shell.output, ++g_shell.len_exp, i);
+				g_shell.env = ft_add_var(g_shell.env, g_shell.output, ++g_shell.len_env, i);
+				tmp = g_shell.env[g_shell.len_env - 1];
+				g_shell.env[g_shell.len_env - 1] = g_shell.env[g_shell.len_env - 2];
+				g_shell.env[g_shell.len_env - 2] = tmp;
 			}
 			ft_strlcpy(g_shell.output, &g_shell.output[i], ft_strlen(g_shell.output));
 			i = 0;
 		}
 		else if (i > 0 && (!g_shell.output[i] || g_shell.output[i] == ' '))
 		{
+			add[1] = 1;
 			k = g_shell.output[i];
-			g_shell.sort_env = ft_add_var(g_shell.sort_env, g_shell.output, i);
-			g_shell.sort_env[g_shell.len_env - 1] =
-				ft_str_add(g_shell.sort_env[g_shell.len_env - 1], "=''");
+			g_shell.sort_env = ft_add_var(g_shell.sort_env, g_shell.output, ++g_shell.len_exp, i);
+			g_shell.sort_env[g_shell.len_exp - 1] =
+				ft_str_add(g_shell.sort_env[g_shell.len_exp - 1], "=''");
 			if (!k)
 				break;
 			ft_strlcpy(g_shell.output, &g_shell.output[i + 1], ft_strlen(g_shell.output));
@@ -187,8 +236,11 @@ void		ft_export(char *buf)
 		i++;
 	if (!buf[i] || (buf[i] == '\n' && !buf[i + 1]))
 	{
+		i = 0;
 		while (g_shell.sort_env[i])
+		{
 			ft_printf(1, "%s\n", g_shell.sort_env[i++]);
+		}
 		return ;
 	}
 	ft_strlcpy(buf, &buf[i], ft_strlen(&buf[i]));

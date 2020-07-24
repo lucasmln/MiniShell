@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/23 20:52:33 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/24 14:26:22 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ typedef struct		s_minishell
 	char	*dir;
 	char	**env;
 	char	**sort_env;
+	int		len_exp;
 	int		len_env;
 	int		i;
 }					t_minishell;
@@ -63,7 +64,7 @@ void			ft_echo(char *buf);
 void			ft_env(char *buf, char **env);
 void			ft_error_export(char *buf);
 void			ft_sort_env(char **env);
-char			**ft_add_var(char **env, char *buf, int i);
+char			**ft_add_var(char **env, char *buf, int len_env, int i);
 void			ft_export(char *buf);
 
 /*
