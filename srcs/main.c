@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/24 14:53:17 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/25 18:19:55 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,8 @@ int			ft_print_prompt()
 		ft_echo(&g_shell.buf[i + ft_strlen("echo")]);
 	else if (!(ft_strncmp(&g_shell.buf[i], "ls", ft_strlen("ls"))))
 		ft_ls(&g_shell.buf[i + ft_strlen("ls")]);
+	else if (!(ft_strncmp(&g_shell.buf[i], "unset", ft_strlen("unset"))))
+		ft_ls(&g_shell.buf[i + ft_strlen("unset")]);
 	else if (!ft_strncmp(g_shell.buf, "exit", ft_strlen("exit")))
 		return (0);
 	else

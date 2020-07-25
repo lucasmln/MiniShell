@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:15:40 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/25 17:05:12 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/25 18:32:48 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,12 @@ int			ft_find_var(char **env, char *var)
 	while (env[i])
 	{
 		if (!ft_strncmp(env[i], var, ft_strlen(var) - ft_strlen(ft_strchr(var, '='))))
-			cmp++;
+		{
+			if (env == g_shell.env)
+				return (i);
+			else
+				cmp++;
+		}
 		i++;
 	}
 	return (cmp);
@@ -135,15 +140,12 @@ void		ft_get_var(int i)
 {
 	int		k;
 	int		save_len[2];
-	int		add[2];
 	char	*tmp;
 
 	save_len[0] = g_shell.len_exp;
 	save_len[1] = g_shell.len_env;
 	while (1)
 	{
-		add[0] = 0;
-		add[1] = 0;
 		if (g_shell.output[i] == '=' && i == 0)
 		{
 			if (g_shell.output[i + 1] == ' ')
@@ -271,20 +273,4 @@ void		ft_export(char *buf)
 	ft_sort_env(g_shell.sort_env);
 	free(g_shell.output);
 	g_shell.output = NULL;
-/*	while (g_shell.output[i])
-	{
-		if (check == 0 && (g_shell.output[i] == ' ' || g_shell.output[i] == '\n'
-					|| !g_shell.output[i]) && i > 0)
-		{
-			ft_add_var(g_shell.output, &check, i, 0);
-			while (g_shell.output[i] == ' ')
-				i++;
-			ft_strlcpy(g_shell.output, &g_shell.output[i], ft_strlen(g_shell.output));
-			i = -1;
-		}
-		i++;
-	}
-		if (check == 0 && (g_shell.output[i] == ' ' || g_shell.output[i] == '\n'
-					|| !g_shell.output[i]) && i > 0)
-			ft_add_var(g_shell.output, &check, i, 0);
-*/}
+}

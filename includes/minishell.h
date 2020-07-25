@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/24 14:26:22 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/25 18:20:26 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,9 @@ void			ft_env(char *buf, char **env);
 void			ft_error_export(char *buf);
 void			ft_sort_env(char **env);
 char			**ft_add_var(char **env, char *buf, int len_env, int i);
+void			ft_del_var(char **env, int len);
+int				ft_find_var(char **env, char *var);
+int				ft_change_var(char **env, int len);
 void			ft_export(char *buf);
 
 /*
@@ -85,5 +88,11 @@ int				ft_print_prompt();
 
 void			ft_pwd_error(char *buf, int error);
 void			ft_pwd(char *buf);
+
+/*
+ ** unset.c
+*/
+
+void			ft_unset(char *buf);
 
 #endif
