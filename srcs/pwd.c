@@ -29,9 +29,9 @@ void		ft_pwd(char *buf)
 	i = 0;
 	while (buf[i] == ' ')
 		i++;
-	if (buf[i] != '\n')
+	if (buf[i] != '\n' && buf[i] != ';')
 	{
-	ft_check_quote(buf, quote);
+		ft_check_quote(buf, quote);
 		if (i != 0)
 			ft_pwd_error(buf, 0);
 		else
@@ -46,4 +46,13 @@ void		ft_pwd(char *buf)
 	ft_printf(1, "%s\n", pwd);
 	free(pwd);
 	pwd = NULL;
+	if (g_shell.output[i++] == ';')
+	{
+		while (g_shell.output[i] && g_shell.output[i] == ' ')
+			i++;
+		ft_strlcpy(g_shell.output, &g_shell.output[i], ft_strlen(g_shell.output));
+		ft_get_cmd(g_shell.output);
+		free(g_shell.output);
+		g_shell.output = NULL;
+	}
 }

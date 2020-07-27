@@ -51,11 +51,45 @@ int			ft_copy_env(const char **env)
 	return (1);
 }
 
+int			ft_get_cmd(char *buf)
+{
+	int		i;
+
+	i = 0;
+	ft_printf(1, "tmp = %d\n", 3 +ft_strncmp(buf, "pwd", ft_strlen("pwd")));
+	while (buf[i] && buf[i] == ' ')
+		i++;
+	if (!ft_strncmp(&buf[i], "cd", ft_strlen("cd")))
+		ft_cd(&buf[i + 2]);
+	else if (!ft_strncmp(&buf[i], "pwd", ft_strlen("pwd")))
+		ft_pwd(&buf[i + 3]);
+		else if (!ft_strncmp(&buf[i], "export ", ft_strlen("export")))
+			ft_export(&buf[i + ft_strlen("export")]);
+	else if (!ft_strncmp(&buf[i], "env", ft_strlen("env")))
+		ft_env(&buf[i + ft_strlen("env")], g_shell.env);
+	else if (!ft_strncmp(&buf[i], "echo", ft_strlen("echo")))
+		ft_echo(&buf[i + ft_strlen("echo")]);
+	else if (!(ft_strncmp(&buf[i], "ls", ft_strlen("ls"))))
+		ft_ls(&buf[i + ft_strlen("ls")]);
+	else if (!(ft_strncmp(&buf[i], "unset", ft_strlen("unset"))))
+		ft_unset(&buf[i + ft_strlen("unset")]);
+	else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
+		return (0);
+	else
+		ft_printf(1, "minishell: command not found %s", buf);
+//	free(buf);
+//	buf = NULL;
+	ft_printf(1, "l80 mqin.c\n");
+	return (1);
+}
+
 int			ft_print_prompt()
 {
 	int		i;
 	int		ret;
 	int		pos;
+	int		res;
+	char	*buf;
 
 	signal(SIGQUIT, ft_get_signal);
 	signal(SIGINT, ft_get_signal);
@@ -67,8 +101,11 @@ int			ft_print_prompt()
 	ft_printf(1, "" BOLDGREEN "➜ " RESET BOLDCYAN " %s " RESET, &g_shell.dir[i + 1]);
 	ret = read(0, g_shell.buf, BUF_SIZE);
 	g_shell.buf[ret] = '\0';
-	i = 0;
-	while (g_shell.buf[i] && g_shell.buf[i] == ' ')
+	buf = ft_strdup(g_shell.buf);
+	res = ft_get_cmd(buf);
+	free(g_shell.dir);
+	g_shell.dir = NULL;
+/*	while (g_shell.buf[i] && g_shell.buf[i] == ' ')
 		i++;
 	if (!ft_strncmp(&g_shell.buf[i], "cd", ft_strlen("cd")))
 		ft_cd(&g_shell.buf[i + 2]);
@@ -88,9 +125,9 @@ int			ft_print_prompt()
 		return (0);
 	else
 		ft_printf(1, "minishell: command not found %s", g_shell.buf);
-	free(g_shell.dir);
+*/	free(g_shell.dir);
 	g_shell.dir = NULL;
-	return (1);
+	return (res);
 }
 
 int			main(int ac, char **av, const char **env)

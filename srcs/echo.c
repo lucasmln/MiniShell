@@ -94,7 +94,6 @@ char	*ft_str_del_char(char *str, char c)
 
 	i = 0;
 	k = 0;
-	//ft_printf(1, "str =%s.", str);
 	while (str[i])
 	{
 		if (str[i] == c)
@@ -116,9 +115,12 @@ void	ft_echo(char *buf)
 	int		i;
 	int		flag;
 	int		quote;
+	int		save;
 	char	type_quote[1];
+	char	*tmp;
 
 	i = 0;
+	save = -1;
 	while (buf[i] && buf[i] == ' ')
 		i++;
 	if (i == 0)
@@ -127,7 +129,8 @@ void	ft_echo(char *buf)
 		return ;
 	}
 	flag = ft_strncmp(&buf[i], "-n ", 3) == 0 ? 1 : 0;
-	flag == 1 ? ft_strlcpy(buf, &buf[i + 3], ft_strlen(&buf[i + 3])) : ft_strlcpy(buf, &buf[i], ft_strlen(&buf[i]) + 1);
+	flag == 1 ? ft_strlcpy(buf, &buf[i + 3], ft_strlen(&buf[i + 3])) :
+		ft_strlcpy(buf, &buf[i], ft_strlen(&buf[i]) + 1);
 	while (buf[i] == ' ')
 		i++;
 	ft_check_quote(buf, type_quote);
@@ -135,7 +138,21 @@ void	ft_echo(char *buf)
 		g_shell.output = ft_str_del_char(g_shell.output, S_QUOTE);
 	if (type_quote[0] == '"')
 		g_shell.output = ft_str_del_char(g_shell.output, '"');
-	flag ? ft_printf(1, "%s", g_shell.output) : ft_printf(1, "%s", g_shell.output);
-	free(g_shell.output);
-	g_shell.output = NULL;
+	i = -1;
+	while (g_shell.output[++i] && save == -1)
+		if (g_shell.output[i] == ';')
+			save = i;
+	save != -1 ? g_shell.output[save] = '\0' : 0;
+	save != -1 && !flag ? ft_printf(1, "%s\n", g_shell.output) : ft_printf(1, "%s", g_shell.output);
+	if (save != -1)
+	{
+		g_shell.output[save] = ';';
+		while (g_shell.output[++save] == ' ')
+			;
+		tmp = ft_strdup(&g_shell.output[save]);
+		free(g_shell.output);
+		g_shell.output = tmp;
+		ft_str_add(g_shell.output, "\n");
+		ft_get_cmd(g_shell.output);
+	}
 }
