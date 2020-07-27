@@ -83,7 +83,7 @@ int			ft_print_prompt()
 	else if (!(ft_strncmp(&g_shell.buf[i], "ls", ft_strlen("ls"))))
 		ft_ls(&g_shell.buf[i + ft_strlen("ls")]);
 	else if (!(ft_strncmp(&g_shell.buf[i], "unset", ft_strlen("unset"))))
-		ft_ls(&g_shell.buf[i + ft_strlen("unset")]);
+		ft_unset(&g_shell.buf[i + ft_strlen("unset")]);
 	else if (!ft_strncmp(g_shell.buf, "exit", ft_strlen("exit")))
 		return (0);
 	else

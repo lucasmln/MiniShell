@@ -66,7 +66,7 @@ void			ft_error_export(char *buf);
 void			ft_sort_env(char **env);
 char			**ft_add_var(char **env, char *buf, int len_env, int i);
 void			ft_del_var(char **env, int len);
-int				ft_find_var(char **env, char *var);
+int				ft_find_var(char **env, char *var, char c);
 int				ft_change_var(char **env, int len);
 void			ft_export(char *buf);
 

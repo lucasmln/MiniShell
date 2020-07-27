@@ -95,7 +95,7 @@ void		ft_del_var(char **env, int len)
 	}
 }
 
-int			ft_find_var(char **env, char *var)
+int			ft_find_var(char **env, char *var, char c)
 {
 	int		i;
 	int		cmp;
@@ -104,16 +104,11 @@ int			ft_find_var(char **env, char *var)
 	cmp = 0;
 	while (env[i])
 	{
-		if (!ft_strncmp(env[i], var, ft_strlen(var) - ft_strlen(ft_strchr(var, '='))))
-		{
-			if (env == g_shell.env)
+		if (!ft_strncmp(env[i], var, ft_strlen(var) - ft_strlen(ft_strchr(var, c))))
 				return (i);
-			else
-				cmp++;
-		}
 		i++;
 	}
-	return (cmp);
+	return (i);
 }
 
 int			ft_change_var(char **env, int len)
@@ -135,7 +130,6 @@ int			ft_change_var(char **env, int len)
 	return (1);
 }
 
-
 void		ft_get_var(int i)
 {
 	int		k;
@@ -146,6 +140,18 @@ void		ft_get_var(int i)
 	save_len[1] = g_shell.len_env;
 	while (1)
 	{
+		if (!ft_isalnum(g_shell.output[i]) && g_shell.output[i] != '_' && g_shell.output[i] != '=' && g_shell.output[i] != ' ' && g_shell.output[i] != '\0')
+		{
+			while (g_shell.output[i] && g_shell.output[i] != ' ')
+				i++;
+			k = g_shell.output[i];
+			g_shell.output[i] = '\0';
+			ft_printf(1, "export: not valid in this context: %s\n", g_shell.output[i]);
+			if (!k)
+				break;
+			ft_strlcpy(g_shell.output, &g_shell.output[i], ft_strlen(&g_shell.output[i]));
+			i = 0;
+		}
 		if (g_shell.output[i] == '=' && i == 0)
 		{
 			if (g_shell.output[i + 1] == ' ')
@@ -181,9 +187,9 @@ void		ft_get_var(int i)
 					ft_str_add(g_shell.env[g_shell.len_env - 1], "=");
 				g_shell.sort_env[g_shell.len_exp - 1] =
 					ft_str_add(g_shell.sort_env[g_shell.len_exp - 1], "=''");
-				if (ft_find_var(g_shell.sort_env, g_shell.sort_env[g_shell.len_exp - 1]) > 1)
+				if (ft_find_var(g_shell.sort_env, g_shell.sort_env[g_shell.len_exp - 1], '=') != g_shell.len_exp - 1)
 					ft_change_var(g_shell.sort_env, g_shell.len_exp);
-				if (ft_find_var(g_shell.env, g_shell.sort_env[g_shell.len_env - 1]) > 1)
+				if (ft_find_var(g_shell.env, g_shell.env[g_shell.len_env - 1], '=') != g_shell.len_env - 1)
 						ft_change_var(g_shell.env, g_shell.len_env);
 				else
 				{
@@ -200,9 +206,9 @@ void		ft_get_var(int i)
 					i++;
 				g_shell.sort_env = ft_add_var(g_shell.sort_env, g_shell.output, ++g_shell.len_exp, i);
 				g_shell.env = ft_add_var(g_shell.env, g_shell.output, ++g_shell.len_env, i);
-				if (ft_find_var(g_shell.sort_env, g_shell.sort_env[g_shell.len_exp - 1]) > 1)
+				if (ft_find_var(g_shell.sort_env, g_shell.sort_env[g_shell.len_exp - 1], '=') != g_shell.len_exp - 1)
 					ft_change_var(g_shell.sort_env, g_shell.len_exp);
-				if (ft_find_var(g_shell.env, g_shell.env[g_shell.len_env - 1]) > 1)
+				if (ft_find_var(g_shell.env, g_shell.env[g_shell.len_env - 1], '=') != g_shell.len_env - 1)
 					ft_change_var(g_shell.env, g_shell.len_env);
 				else
 				{
@@ -220,7 +226,7 @@ void		ft_get_var(int i)
 			g_shell.sort_env = ft_add_var(g_shell.sort_env, g_shell.output, ++g_shell.len_exp, i);
 			g_shell.sort_env[g_shell.len_exp - 1] =
 				ft_str_add(g_shell.sort_env[g_shell.len_exp - 1], "=''");
-			if (ft_find_var(g_shell.sort_env, g_shell.sort_env[g_shell.len_exp - 1]) > 1)
+			if (ft_find_var(g_shell.sort_env, g_shell.sort_env[g_shell.len_exp - 1], '=') != g_shell.len_exp - 1)
 				ft_del_var(g_shell.sort_env, (g_shell.len_exp -= 1));
 			if (!k)
 				break;
