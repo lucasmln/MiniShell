@@ -6,11 +6,11 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/01 14:47:11 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/14 16:47:00 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 13:36:35 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../includes/ft_printf.h"
+#include "ft_printf.h"
 #include "../libft/libft.h"
 
 int			ft_strlen_nb(long nb, int base)

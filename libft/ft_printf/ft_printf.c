@@ -6,11 +6,11 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/01 14:48:15 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/14 16:50:08 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 13:37:08 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../includes/ft_printf.h"
+#include "ft_printf.h"
 #include "../libft/libft.h"
 
 t_count			ft_print_front_flag(t_count cmp, int neg, char *s)

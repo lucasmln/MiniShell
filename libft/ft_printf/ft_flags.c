@@ -6,12 +6,12 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/01 14:47:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/14 15:47:53 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 13:36:56 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/libft.h"
-#include "../../includes/ft_printf.h"
+#include "ft_printf.h"
 
 t_count		ft_flag_zero(va_list aux, t_count cmp, const char *s)
 {

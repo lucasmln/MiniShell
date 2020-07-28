@@ -6,11 +6,11 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/01 14:47:49 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/14 15:47:47 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 13:36:51 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../includes/ft_printf.h"
+#include "ft_printf.h"
 #include "../libft/libft.h"
 
 t_count			ft_check_null_str(t_count cmp, char *s)

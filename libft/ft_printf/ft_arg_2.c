@@ -6,11 +6,11 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/01 14:47:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/14 15:47:42 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 13:36:46 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../includes/ft_printf.h"
+#include "ft_printf.h"
 #include "../libft/libft.h"
 
 t_count		ft_is_p(t_count cmp, long long nb)

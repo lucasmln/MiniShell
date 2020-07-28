@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:25 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/28 11:54:52 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 16:37:20 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,12 @@ char		*ft_str_add(char *s1, char const *s2)
 	if (!s1)
 		return (NULL);
 	if (!s2)
-		return (s1);
+	{
+		new = ft_strdup(s1);
+		free(s1);
+		s1 = NULL;
+		return (new);
+	}
 	while (s1[len1])
 		len1++;
 	while (s2[len2])
@@ -42,7 +47,8 @@ char		*ft_str_add(char *s1, char const *s2)
 	new[len1 + len2] = '\0';
 	free(s1);
 	s1 = NULL;
-	return (new);
+	s1 = new;
+	return (s1);
 }
 
 void	ft_check_quote(char *buf, char *type_quote)
@@ -132,7 +138,10 @@ void	ft_echo(char *buf)
 		ft_strlcpy(buf, &buf[i], ft_strlen(&buf[i]) + 1);
 	while (buf[i] == ' ')
 		i++;
-	ft_check_quote(buf, type_quote);
+//	ft_check_quote(buf, type_quote);
+	g_shell.output = ft_strdup(buf);
+//	free(buf);
+//	buf = NULL;
 	if (type_quote[0] == S_QUOTE)
 		g_shell.output = ft_str_del_char(g_shell.output, S_QUOTE);
 	if (type_quote[0] == '"')
@@ -149,9 +158,15 @@ void	ft_echo(char *buf)
 		while (g_shell.output[++save] == ' ')
 			;
 		tmp = ft_strdup(&g_shell.output[save]);
+	}
 		free(g_shell.output);
+		g_shell.output = NULL;
+	if (save != -1)
+	{
 		g_shell.output = tmp;
 		ft_str_add(g_shell.output, "\n");
 		ft_get_cmd(g_shell.output);
+	//	free(g_shell.output);
+	//	g_shell.output = NULL;
 	}
 }

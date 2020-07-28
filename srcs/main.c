@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/28 12:04:44 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 14:55:03 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,6 @@ int			ft_get_cmd(char *buf)
 	int		i;
 
 	i = 0;
-//	ft_printf(1, "tmp = %d\n", 3 +ft_strncmp(buf, "pwd", ft_strlen("pwd")));
 	while (buf[i] && buf[i] == ' ')
 		i++;
 	if (!ft_strncmp(&buf[i], "cd", ft_strlen("cd")))
@@ -76,6 +75,8 @@ int			ft_get_cmd(char *buf)
 		return (0);
 	else
 		ft_printf(1, "minishell: command not found %s", buf);
+//	free(g_shell.output);
+//	g_shell.output = NULL;
 	free(buf);
 	buf = NULL;
 	return (1);
@@ -99,30 +100,11 @@ int			ft_print_prompt()
 	ret = read(0, g_shell.buf, BUF_SIZE);
 	g_shell.buf[ret] = '\0';
 	buf = ft_strdup(g_shell.buf);
-	res = ft_get_cmd(buf);
+	ft_check_quote(buf, g_shell.buf);
+	free(buf);
+	buf = NULL;
+	res = ft_get_cmd(g_shell.output);
 	free(g_shell.dir);
-	g_shell.dir = NULL;
-/*	while (g_shell.buf[i] && g_shell.buf[i] == ' ')
-		i++;
-	if (!ft_strncmp(&g_shell.buf[i], "cd", ft_strlen("cd")))
-		ft_cd(&g_shell.buf[i + 2]);
-	else if (!ft_strncmp(&g_shell.buf[i], "pwd", ft_strlen("pwd")))
-		ft_pwd(&g_shell.buf[i + 3]);
-		else if (!ft_strncmp(&g_shell.buf[i], "export ", ft_strlen("export")))
-			ft_export(&g_shell.buf[i + ft_strlen("export")]);
-	else if (!ft_strncmp(&g_shell.buf[i], "env", ft_strlen("env")))
-		ft_env(&g_shell.buf[i + ft_strlen("env")], g_shell.env);
-	else if (!ft_strncmp(&g_shell.buf[i], "echo", ft_strlen("echo")))
-		ft_echo(&g_shell.buf[i + ft_strlen("echo")]);
-	else if (!(ft_strncmp(&g_shell.buf[i], "ls", ft_strlen("ls"))))
-		ft_ls(&g_shell.buf[i + ft_strlen("ls")]);
-	else if (!(ft_strncmp(&g_shell.buf[i], "unset", ft_strlen("unset"))))
-		ft_unset(&g_shell.buf[i + ft_strlen("unset")]);
-	else if (!ft_strncmp(g_shell.buf, "exit", ft_strlen("exit")))
-		return (0);
-	else
-		ft_printf(1, "minishell: command not found %s", g_shell.buf);
-*/	free(g_shell.dir);
 	g_shell.dir = NULL;
 	return (res);
 }
