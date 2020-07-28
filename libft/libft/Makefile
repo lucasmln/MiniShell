@@ -6,7 +6,7 @@
 #    By: jgrandne <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/10/16 11:50:11 by jgrandne          #+#    #+#              #
-#    Updated: 2019/11/01 14:44:00 by lmoulin          ###   ########.fr        #
+#    Updated: 2020/07/28 13:05:43 by lmoulin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,6 +31,8 @@ ft_lstmap_bonus.c
 INCLUDES = ../includes/libft.h
 OBJS_LIBFT = $(SRCS:.c=.o)
 OBJS_BONUS_LIBFT = $(SRCS_BONUS_LIBFT:.c=.o)
+
+OBJS_DIR = ./objs/
 
 CC = gcc
 
@@ -70,7 +72,9 @@ $(NAME) : $(OBJS_LIBFT)
 	@echo "$(_END)$(_GREEN) [OK]\t"
 	@ar rc $(NAME) $(OBJS_LIBFT)
 	@ranlib $(NAME)
-	@echo "$(_END)$(_GREEN)[Done]"
+	@mkdir objs
+	@mv *.o objs
+	@echo "\033[1;34mlibft\t\t\033[1;33mCompilation\t\033[0;32m[OK]\033[0m"
 
 %.o : %.c $(INCLUDES)
 	@echo "$(_END)$(_GREEN) [OK]\t"
@@ -88,9 +92,15 @@ bonus : $(OBJS_LIBFT) $(OBJS_BONUS_LIBFT)
 
 
 fclean : clean
-	@rm -f $(NAME)
+	@rm -rf $(NAME)
+	@echo "\033[1;34mlibft\t\t\033[1;33mCleaning lib\t\033[0;32m[OK]\033[0m"
 
 clean :
-	@rm -f $(OBJS_LIBFT) $(OBJS_BONUS_LIBFT)
+	@rm -rf $(OBJS_DIR) $(OBJS_BONUS_LIBFT)
+	@echo "\033[1;34mlibft\t\t\033[1;33mCleaning obj\t\033[0;32m[OK]\033[0m"
 
-.PHONY : all re fclean clean bonus
+norme :
+	@norminette $(SRCS)
+	@echo "\033[1;34mlibft\t\033[1;33mNorminette\t\033[0;32m[OK]\033[0m"
+
+.PHONY : all re fclean clean bonus norme

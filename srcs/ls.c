@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/22 14:37:30 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/22 15:09:57 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 12:03:50 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void		ft_ls(char *buf)
 	i = -1;
 	len_max = 0;
 	while ((save[++i] = readdir(dir)))
-		if (len_max < ft_strlen(save[i]->d_name))
+		if (len_max < (int)ft_strlen(save[i]->d_name))
 			len_max = ft_strlen(save[i]->d_name);
 	save[i] = NULL;
 	i = -1;

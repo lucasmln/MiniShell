@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/25 18:18:46 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/25 18:46:25 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 12:06:40 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,10 +41,8 @@ void		ft_unset(char *buf)
 {
 	int		i;
 	int		k;
-	int		save;
 	char	quote[1];
 	int		error;
-	char	*tmp;
 
 	i = 0;
 	error = 0;

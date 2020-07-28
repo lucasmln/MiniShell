@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/25 18:19:55 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 12:04:44 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ int			ft_copy_env(const char **env)
 {
 	int		i;
 	int		len;
-	char	*tmp;
 
 	len = 0;
 	while (env[len])
@@ -56,7 +55,7 @@ int			ft_get_cmd(char *buf)
 	int		i;
 
 	i = 0;
-	ft_printf(1, "tmp = %d\n", 3 +ft_strncmp(buf, "pwd", ft_strlen("pwd")));
+//	ft_printf(1, "tmp = %d\n", 3 +ft_strncmp(buf, "pwd", ft_strlen("pwd")));
 	while (buf[i] && buf[i] == ' ')
 		i++;
 	if (!ft_strncmp(&buf[i], "cd", ft_strlen("cd")))
@@ -77,9 +76,8 @@ int			ft_get_cmd(char *buf)
 		return (0);
 	else
 		ft_printf(1, "minishell: command not found %s", buf);
-//	free(buf);
-//	buf = NULL;
-	ft_printf(1, "l80 mqin.c\n");
+	free(buf);
+	buf = NULL;
 	return (1);
 }
 
@@ -87,7 +85,6 @@ int			ft_print_prompt()
 {
 	int		i;
 	int		ret;
-	int		pos;
 	int		res;
 	char	*buf;
 
@@ -132,13 +129,10 @@ int			ft_print_prompt()
 
 int			main(int ac, char **av, const char **env)
 {
-	int		ret;
-	int		i;
-	int		pos;
-
+	(void)ac;
+	(void)av;
 	if (!(ft_copy_env(env)))
 		return (-1);
-	i = 0;
 	while (ft_print_prompt())
 		;
 }

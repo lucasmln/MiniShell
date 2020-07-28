@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:25 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/23 15:13:27 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 11:54:52 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,6 @@ void	ft_echo(char *buf)
 {
 	int		i;
 	int		flag;
-	int		quote;
 	int		save;
 	char	type_quote[1];
 	char	*tmp;

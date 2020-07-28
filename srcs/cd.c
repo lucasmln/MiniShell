@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:18 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/23 15:13:19 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 11:53:48 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ void		ft_cd_home(char *buf)
 	int		i;
 	int		count;
 
+	(void)buf;
 	if (!(dir = malloc(sizeof(char) * BUF_SIZE + 1)))
 		return;
 	dir = getcwd(dir, BUF_SIZE);
@@ -58,7 +59,6 @@ void		ft_cd(char *buf)
 	i = 0;
 	while (g_shell.output[++i] && save == -1)
 	{
-	//	ft_printf(1, "i = %d, save = %d\n", i, save);
 		if (g_shell.output[i] == ';')
 			save = i;
 		if (save == -1 && g_shell.output[i] == '\n' && !g_shell.output[i + 1])

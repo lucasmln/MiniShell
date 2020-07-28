@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:15:40 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/25 18:32:48 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 12:03:15 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ void		ft_sort_env(char **env)
 	int		i;
 	char	*tmp;
 
+	(void)env;
 	i = -1;
 	while (g_shell.sort_env[++i + 1])
 	{
@@ -261,9 +262,7 @@ void		ft_export(char *buf)
 	{
 		i = 0;
 		while (g_shell.sort_env[i])
-		{
 			ft_printf(1, "%s\n", g_shell.sort_env[i++]);
-		}
 		return ;
 	}
 	ft_strlcpy(buf, &buf[i], ft_strlen(&buf[i]));

@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/25 18:20:26 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/28 11:54:33 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,7 @@ void			ft_ls(char *buf);
 */
 
 int				ft_print_prompt();
+int			ft_get_cmd(char *buf);
 
 /*
  ** pwd.c
