@@ -18,6 +18,7 @@ void		ft_error_cd(struct stat info, char *buf)
 		ft_printf(1, "cd: not a directory: %s\n", buf);
 	else
 		ft_printf(1, "cd: no such file or directory: %s\n", buf);
+	g_shell.ret = 1;
 }
 
 int		ft_cd_home()

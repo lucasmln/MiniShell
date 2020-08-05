@@ -38,6 +38,7 @@ typedef struct		s_minishell
 	int		len_exp;
 	int		len_env;
 	int		i;
+	int		ret;
 }					t_minishell;
 
 t_minishell		g_shell;

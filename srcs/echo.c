@@ -137,6 +137,7 @@ int		ft_echo(char *buf)
 		i++;
 	if (i == 0)
 	{
+		g_shell.ret = 127;
 		ft_printf(1, "minishell: command not found %s", buf);
 		return (2);
 	}

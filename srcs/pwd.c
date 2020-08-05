@@ -18,6 +18,7 @@ int			ft_pwd_error(char *buf, int error)
 		ft_printf(1, "pwd: too many arguments\n");
 	else if (error == 1)
 		ft_printf(1, "minishell: command not found pwd%s\n", buf);
+		g_shell.ret = 1;
 	return (1);
 }
 

@@ -42,7 +42,7 @@ int			ft_ls(char *buf)
 	flag = ft_strncmp(&buf[i], "-a", ft_strlen("-a")) == 0 ? 1 : 0;
 	ft_strlcpy(buf, &buf[flag == 1 ? i + 2 : i], ft_strlen(buf));
 	if (!(dir = opendir(!buf[0] ? "." : buf)))
-		return (1);
+		return ((g_shell.ret = 1));
 	i = 0;
 	while ((ent = readdir(dir)))
 		i++;

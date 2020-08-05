@@ -24,6 +24,59 @@ void		ft_get_signal(int code)
 	exit(code);
 }
 
+char		*ft_dollars(char *buf)
+{
+	int		i;
+	int		start;
+	int		save;
+	int		pos;
+	char	*new;
+
+	i = 0;
+	if (!(new = malloc(sizeof(char) * 1)))
+		return (NULL);
+	new[0] = '\0';
+	while (buf[i])
+	{
+		if (buf[i] == '$')
+		{
+			i++;
+			start = i;
+			if (buf[i] && (ft_isalnum(buf[i]) || buf[i] == '_'))
+			{
+				while (buf[i] && (ft_isalnum(buf[i]) || buf[i] == '_'))
+					i++;
+				save = buf[i];
+				buf[i] = '\0';
+				pos = ft_find_var(g_shell.sort_env, &buf[start], '\0');
+				new = ft_str_add(new, ft_strchr(g_shell.sort_env[pos], '=') ? ft_strchr(g_shell.sort_env[pos], '=') + 1 : "");
+				buf[i] = save;
+				i--;
+			}
+			else if (buf[i] == '?')
+			{
+				new = ft_str_add(new, (g_shell.tmp = ft_itoa(g_shell.ret)));
+				free(g_shell.tmp);
+			}
+			else
+			{
+				new = ft_str_add(new, "$");
+				i--;
+			}
+		}
+		else
+		{
+			save = buf[i + 1];
+			buf[i + 1] = '\0';
+			new = ft_str_add(new, &buf[i]);
+			buf[i + 1] = save;
+		}
+		i++;
+	}
+	g_shell.tmp = NULL;
+	return (new);
+}
+
 int			ft_copy_env(const char **env)
 {
 	int		i;
@@ -56,6 +109,7 @@ int			ft_get_cmd(char *buf)
 	int		res;
 
 	i = 0;
+	g_shell.ret = 0;
 	res = 1;
 	while (buf[i] && buf[i] == ' ')
 		i++;
@@ -107,10 +161,15 @@ int			ft_print_prompt()
 	g_shell.buf[ret] = '\0';
 	buf = ft_strdup(g_shell.buf);
 	buf = ft_check_quote(buf);
+	g_shell.tmp = ft_dollars(buf);
+	free(buf);
+	buf = g_shell.tmp;
 	if (g_shell.quote[0] == S_QUOTE)
 		buf = ft_str_del_char(buf, S_QUOTE);
 	if (g_shell.quote[0] == '"')
 		buf = ft_str_del_char(buf, '"');
+	if (buf[ft_strlen(buf) - 1] == '\n')
+		buf[ft_strlen(buf) - 1] = '\0';
 	res = ft_get_cmd(buf);
 	return (res);
 }

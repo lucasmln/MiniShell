@@ -20,6 +20,7 @@ int			ft_error_unset(int error, char *buf)
 		ft_printf(1, "unset: not enough arguments\n", buf);
 	else if (error == 2)
 		ft_printf(1, "unset: %s: invalid parameter name\n", buf);
+	g_shell.ret = 1;
 	return (2);
 }
 

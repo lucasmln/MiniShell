@@ -335,6 +335,7 @@ int			ft_export(char *buf)
 		ft_error_export(g_shell.output);
 		free(g_shell.output);
 		g_shell.output = NULL;
+		g_shell.ret = 1;
 		if (save != -1)
 		{
 			buf[save] = ';';
