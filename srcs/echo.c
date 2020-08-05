@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:25 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/28 16:37:20 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/31 15:50:43 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ char		*ft_str_add(char *s1, char const *s2)
 	len1 = 0;
 	len2 = 0;
 	if (!s1)
-		return (NULL);
+		return (ft_strdup(s2));
 	if (!s2)
 	{
 		new = ft_strdup(s1);
@@ -51,46 +51,49 @@ char		*ft_str_add(char *s1, char const *s2)
 	return (s1);
 }
 
-void	ft_check_quote(char *buf, char *type_quote)
+char	*ft_check_quote(char *buf)
 {
 	int		i;
 	int		ret;
 	int		d_quote;
 	int		s_quote;
+	char	*new;
 
 	i = 0;
-	type_quote[0] = 0;
+	g_shell.quote[0] = 0;
 	d_quote = 0;
 	s_quote = 0;
 	while (buf[i])
 	{
-		if (!type_quote[0] && (buf[i] == S_QUOTE || buf[i] == '"'))
-			type_quote[0] = buf[i];
-		s_quote = buf[i] == S_QUOTE && S_QUOTE == type_quote[0] ? s_quote + 1: s_quote;
-		d_quote = buf[i] == '"' && '"' == type_quote[0] ? d_quote + 1: d_quote;
+		if (!g_shell.quote[0] && (buf[i] == S_QUOTE || buf[i] == '"'))
+			g_shell.quote[0] = buf[i];
+		s_quote = buf[i] == S_QUOTE && S_QUOTE == g_shell.quote[0] ? s_quote + 1: s_quote;
+		d_quote = buf[i] == '"' && '"' == g_shell.quote[0] ? d_quote + 1: d_quote;
 		i++;
 	}
-	if (!(g_shell.output = ft_strdup(buf)))
-		return ;
-	buf[0] = '\0';
+	if (!(new = ft_strdup(buf)))
+		return (NULL);
+	free(buf);
+	buf = NULL;
 	if (s_quote % 2 != 0 || d_quote % 2 != 0)
 	{
 		while (s_quote % 2 != 0 || d_quote % 2 != 0)
 		{
 			s_quote > 0 ? ft_printf(1, "quote> ") : ft_printf(1, "dquote> ");
-			ret = read(0, buf, BUF_SIZE);
-			buf[ret] = '\0';
+			ret = read(0, g_shell.buf, BUF_SIZE);
+			g_shell.buf[ret] = '\0';
 			i = 0;
-			while (buf[i])
+			while (g_shell.buf[i])
 			{
-				s_quote = buf[i] == S_QUOTE && S_QUOTE == type_quote[0] ? s_quote + 1: s_quote;
-				d_quote = buf[i] == '"' && '"' == type_quote[0] ? d_quote + 1: d_quote;
+				s_quote = g_shell.buf[i] == S_QUOTE && S_QUOTE == g_shell.quote[0] ? s_quote + 1: s_quote;
+				d_quote = g_shell.buf[i] == '"' && '"' == g_shell.quote[0] ? d_quote + 1: d_quote;
 				i++;
 			}
-			if (!(g_shell.output = ft_str_add(g_shell.output, buf)))
-				return ;
+			if (!(new = ft_str_add(new, g_shell.buf)))
+				return (NULL);
 		}
 	}
+	return (new);
 }
 
 char	*ft_str_del_char(char *str, char c)
@@ -116,57 +119,47 @@ char	*ft_str_del_char(char *str, char c)
 	return (str);
 }
 
-void	ft_echo(char *buf)
+int		ft_echo(char *buf)
 {
 	int		i;
 	int		flag;
 	int		save;
-	char	type_quote[1];
 	char	*tmp;
 
 	i = 0;
 	save = -1;
+	while (buf[i])
+		i++;
+	if (i > 0 && buf[i - 1] == '\n')
+		buf[i - 1] = '\0';
+	i = 0;
 	while (buf[i] && buf[i] == ' ')
 		i++;
 	if (i == 0)
 	{
-		ft_printf(1, "minishell: command not found %s", g_shell.buf);
-		return ;
+		ft_printf(1, "minishell: command not found %s", buf);
+		return (2);
 	}
 	flag = ft_strncmp(&buf[i], "-n ", 3) == 0 ? 1 : 0;
-	flag == 1 ? ft_strlcpy(buf, &buf[i + 3], ft_strlen(&buf[i + 3])) :
+	flag == 1 ? ft_strlcpy(buf, &buf[i + 3], ft_strlen(&buf[i + 3]) + 1) :
 		ft_strlcpy(buf, &buf[i], ft_strlen(&buf[i]) + 1);
 	while (buf[i] == ' ')
 		i++;
-//	ft_check_quote(buf, type_quote);
 	g_shell.output = ft_strdup(buf);
-//	free(buf);
-//	buf = NULL;
-	if (type_quote[0] == S_QUOTE)
-		g_shell.output = ft_str_del_char(g_shell.output, S_QUOTE);
-	if (type_quote[0] == '"')
-		g_shell.output = ft_str_del_char(g_shell.output, '"');
 	i = -1;
 	while (g_shell.output[++i] && save == -1)
 		if (g_shell.output[i] == ';')
 			save = i;
 	save != -1 ? g_shell.output[save] = '\0' : 0;
-	save != -1 && !flag ? ft_printf(1, "%s\n", g_shell.output) : ft_printf(1, "%s", g_shell.output);
+	!flag ? ft_printf(1, "%s\n", g_shell.output) : ft_printf(1, "%s", g_shell.output);
 	if (save != -1)
 	{
 		g_shell.output[save] = ';';
-		while (g_shell.output[++save] == ' ')
-			;
-		tmp = ft_strdup(&g_shell.output[save]);
+		tmp = ft_strdup(&g_shell.output[save + 1]);
 	}
-		free(g_shell.output);
-		g_shell.output = NULL;
+	free(g_shell.output);
+	g_shell.output = NULL;
 	if (save != -1)
-	{
-		g_shell.output = tmp;
-		ft_str_add(g_shell.output, "\n");
-		ft_get_cmd(g_shell.output);
-	//	free(g_shell.output);
-	//	g_shell.output = NULL;
-	}
+		return (ft_get_cmd(tmp));
+	return (1);
 }

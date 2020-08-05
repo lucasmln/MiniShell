@@ -6,29 +6,42 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:15:40 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/28 12:03:15 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/31 13:59:34 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-void		ft_env(char *buf, char **env)
+int			ft_env(char *buf, char **env)
 {
 	int		i;
+	char	*tmp;
 
+	i = 0;
+	tmp = NULL;
+	while (buf[i])
+		i++;
+	if (i > 0 && buf[i - 1] == '\n')
+		buf[i - 1] = '\0';
 	i = 0;
 	while (buf[i] == ' ')
 		i++;
-	if (buf[i] != '\n' || (buf[i] == '\n' && buf[i + 1] != '\0'))
+	if (buf [i] != ';' && buf[i] != '\0')
 	{
 		if (i == 0)
-			return ((void)ft_printf(1, "minishell: command not found env%s", buf));
-		ft_printf(1, "env: take no argument\n");
-		return ;
+			ft_printf(1, "minishell: command not found env%s\n", buf);
+		else
+			ft_printf(1, "env: take no argument\n");
+		return (2);
 	}
+	if (buf[i] == ';')
+		tmp = ft_strdup(&buf[i + 1]);
 	i = 0;
 	while (env[i])
 		ft_printf(1, "%s\n", env[i++]);
+	if (tmp)
+		return (ft_get_cmd(tmp));
+	return (1);
 }
 
 void		ft_error_export(char *buf)
@@ -131,7 +144,7 @@ int			ft_change_var(char **env, int len)
 	return (1);
 }
 
-void		ft_get_var(int i)
+int			ft_get_var(int i)
 {
 	int		k;
 	int		save_len[2];
@@ -139,18 +152,28 @@ void		ft_get_var(int i)
 
 	save_len[0] = g_shell.len_exp;
 	save_len[1] = g_shell.len_env;
+	i = 0;
 	while (1)
 	{
+		if (g_shell.output[i] == ';')
+		{
+			tmp = ft_strdup(&g_shell.output[i + 1]);
+			free(g_shell.output);
+			ft_sort_env(g_shell.sort_env);
+			return (ft_get_cmd(tmp));
+		}
 		if (!ft_isalnum(g_shell.output[i]) && g_shell.output[i] != '_' && g_shell.output[i] != '=' && g_shell.output[i] != ' ' && g_shell.output[i] != '\0')
 		{
 			while (g_shell.output[i] && g_shell.output[i] != ' ')
 				i++;
 			k = g_shell.output[i];
 			g_shell.output[i] = '\0';
-			ft_printf(1, "export: not valid in this context: %s\n", g_shell.output[i]);
+			ft_printf(1, "export: not valid in this context: %s\n", g_shell.output);
 			if (!k)
 				break;
-			ft_strlcpy(g_shell.output, &g_shell.output[i], ft_strlen(&g_shell.output[i]));
+			g_shell.tmp = ft_strdup(&g_shell.output[i]);
+			free(g_shell.output);
+			g_shell.output = g_shell.tmp;
 			i = 0;
 		}
 		if (g_shell.output[i] == '=' && i == 0)
@@ -198,6 +221,12 @@ void		ft_get_var(int i)
 					g_shell.env[g_shell.len_env - 1] = g_shell.env[g_shell.len_env - 2];
 					g_shell.env[g_shell.len_env - 2] = tmp;
 				}
+				if (!g_shell.output[i + 1])
+				{
+					free(g_shell.output);
+					g_shell.output = NULL;
+					break ;
+				}
 				while (g_shell.output[i] && g_shell.output[i] != ' ')
 						i++;
 			}
@@ -218,7 +247,15 @@ void		ft_get_var(int i)
 					g_shell.env[g_shell.len_env - 2] = tmp;
 				}
 			}
-			ft_strlcpy(g_shell.output, &g_shell.output[i], ft_strlen(g_shell.output));
+			if (!g_shell.output[i])
+			{
+				free(g_shell.output);
+				g_shell.output = NULL;
+				break;
+			}
+			g_shell.tmp = ft_strdup(&g_shell.output[i]);
+			free(g_shell.output);
+			g_shell.output = g_shell.tmp;
 			i = 0;
 		}
 		else if (i > 0 && (!g_shell.output[i] || g_shell.output[i] == ' '))
@@ -230,52 +267,88 @@ void		ft_get_var(int i)
 			if (ft_find_var(g_shell.sort_env, g_shell.sort_env[g_shell.len_exp - 1], '=') != g_shell.len_exp - 1)
 				ft_del_var(g_shell.sort_env, (g_shell.len_exp -= 1));
 			if (!k)
+			{
+				free(g_shell.output);
+				g_shell.output = NULL;
 				break;
-			ft_strlcpy(g_shell.output, &g_shell.output[i + 1], ft_strlen(g_shell.output));
+			}
+			g_shell.tmp = ft_strdup(&g_shell.output[i + 1]);
+			free(g_shell.output);
+			g_shell.output = g_shell.tmp;
 			i = 0;
 		}
 		else if (g_shell.output[i] == ' ')
 		{
 			while (g_shell.output[i] == ' ')
 				i++;
-			ft_strlcpy(g_shell.output, &g_shell.output[i], ft_strlen(g_shell.output));
+			g_shell.tmp = ft_strdup(&g_shell.output[i]);
+			free(g_shell.output);
+			g_shell.output = g_shell.tmp;
 			i = 0;
 		}
-		else if (!g_shell.output[i])
-			break;
 		else
 			i++;
+		if (!g_shell.output)
+			break;
 	}
 	ft_sort_env(g_shell.sort_env);
+	return (1);
 }
 
-void		ft_export(char *buf)
+int			ft_export(char *buf)
 {
 	int		i;
-	int		check;
-	char	quote[1];
+	int		k;
+	int		save;
+	char	*tmp;
 
+	i = -1;
+	save = -1;
+	while (buf[++i] && save == -1)
+		if (buf[i] == ';')
+			save = i;
+	save != -1 ? buf[save] = '\0': 0;
+	i = 0;
+	while (buf[i])
+		i++;
+	if (i > 0 && buf[i - 1] == '\n')
+		buf[i - 1] = '\0';
 	i = 0;
 	while (buf[i] == ' ')
 		i++;
-	if (!buf[i] || (buf[i] == '\n' && !buf[i + 1]))
+	if (!buf[i] || (buf[i] == '\n' && !buf[i + 1]) || buf[i] == ';' )
 	{
-		i = 0;
-		while (g_shell.sort_env[i])
-			ft_printf(1, "%s\n", g_shell.sort_env[i++]);
-		return ;
+		k = 0;
+		while (g_shell.sort_env[k])
+			ft_printf(1, "%s\n", g_shell.sort_env[k++]);
+		if (save != -1)
+		{
+			buf[save] = ';';
+			tmp = ft_strdup(&buf[save + 1]);
+			return (ft_get_cmd(tmp));
+		}
+		return (1);
 	}
-	ft_strlcpy(buf, &buf[i], ft_strlen(&buf[i]));
-	ft_check_quote(buf, quote);
-	if (!ft_isalpha(g_shell.output[(i = 0)]) && g_shell.output[i] != '_')
+	g_shell.output = ft_strdup(&buf[i]);
+	if (!ft_isalpha(g_shell.output[(k = 0)]) && g_shell.output[k] != '_')
 	{
-		ft_error_export(&g_shell.output[i]);
-		return ;
+		ft_error_export(g_shell.output);
+		free(g_shell.output);
+		g_shell.output = NULL;
+		if (save != -1)
+		{
+			buf[save] = ';';
+			tmp = ft_strdup(&buf[save + 1]);
+			return (ft_get_cmd(tmp));
+		}
+		return (2);
 	}
-	i = 0;
-	check = 0;
-	ft_get_var(i);
-	ft_sort_env(g_shell.sort_env);
-	free(g_shell.output);
-	g_shell.output = NULL;
+	k = ft_get_var(k);
+	if (save != -1)
+	{
+		buf[save] = ';';
+		tmp = ft_strdup(&buf[save + 1]);
+		return (ft_get_cmd(tmp));
+	}
+	return (k);
 }

@@ -6,45 +6,51 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/22 14:37:30 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/28 14:57:39 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/31 14:00:04 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-void		ft_ls(char *buf)
+int			ft_ls(char *buf)
 {
 	DIR				*dir;
 	int				i;
+	int				pt_virgule;
 	int				k;
 	int				l;
 	int				o;
 	int				flag;
 	int				len_max;
-	char			quote[1];
+	char			*tmp;
 	struct dirent	*ent;
 	struct dirent	**save;
 	struct stat		info;
 
+	i = -1;
+	pt_virgule = -1;
+	if (buf[ft_strlen(buf) - 1] == '\n')
+		buf[ft_strlen(buf) - 1] = '\0';
+	while (buf[++i] && pt_virgule == -1)
+		if (buf[i] == ';')
+			pt_virgule = i;
+	if (pt_virgule != -1)
+		buf[pt_virgule] = '\0';
 	i = 0;
-	ft_check_quote(buf, quote);
-	ft_str_del_char(g_shell.output, quote[0]);
-	if (g_shell.output[ft_strlen(g_shell.output) - 1] == '\n')
-		g_shell.output[ft_strlen(g_shell.output) - 1] = '\0';
-	while (g_shell.output[i] && g_shell.output[i] == ' ')
+	while (buf[i] && buf[i] == ' ')
 		i++;
-	flag = ft_strncmp(&g_shell.output[i], "-a", ft_strlen("-a")) == 0 ? 1 : 0;
-	ft_strlcpy(g_shell.output, &g_shell.output[flag == 1 ? i + 2 : i], ft_strlen(g_shell.output));
-	if (!(dir = opendir(!g_shell.output[0] ? "." : g_shell.output)))
-		return ;
+	flag = ft_strncmp(&buf[i], "-a", ft_strlen("-a")) == 0 ? 1 : 0;
+	ft_strlcpy(buf, &buf[flag == 1 ? i + 2 : i], ft_strlen(buf));
+	if (!(dir = opendir(!buf[0] ? "." : buf)))
+		return (1);
 	i = 0;
 	while ((ent = readdir(dir)))
 		i++;
 	closedir(dir);
 	if (!(save = malloc(sizeof(struct dirent) * (i + 1))))
-		return ;
-	if (!(dir = opendir(!g_shell.output[0] ? "." : g_shell.output)))
-		return ;
+		return (0);
+	if (!(dir = opendir(!buf[0] ? "." : buf)))
+		return (0);
 	i = -1;
 	len_max = 0;
 	while ((save[++i] = readdir(dir)))
@@ -76,7 +82,7 @@ void		ft_ls(char *buf)
 					if (!stat(save[i + l]->d_name, &info) && S_ISREG(info.st_mode))
 							ft_printf(1, RESET "%s", save[i + l]->d_name);
 					else
-						ft_printf(1, BOLDCYAN "%s", save[i + l]->d_name);
+						ft_printf(1, BOLDCYAN "%s" RESET, save[i + l]->d_name);
 					while (o-- >= -2)
 						ft_printf(1, " ");
 				}
@@ -91,4 +97,11 @@ void		ft_ls(char *buf)
 	closedir(dir);
 	free(save);
 	save = NULL;
+	if (pt_virgule != -1)
+	{
+		buf[pt_virgule] = ';';
+		tmp = ft_strdup(&buf[pt_virgule + 1]);
+		return (ft_get_cmd(tmp));
+	}
+	return (1);
 }

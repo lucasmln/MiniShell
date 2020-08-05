@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/28 11:54:33 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/31 16:59:48 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <dirent.h>
-#include "ft_printf.h"
+#include "../libft/ft_printf/ft_printf.h"
 #include "color.h"
 #include "../libft/libft/libft.h"
 
@@ -31,8 +31,10 @@ typedef struct		s_minishell
 	char	buf[BUF_SIZE + 1];
 	char	*output;
 	char	*dir;
+	char	*tmp;
 	char	**env;
 	char	**sort_env;
+	char	quote[1];
 	int		len_exp;
 	int		len_env;
 	int		i;
@@ -45,55 +47,56 @@ t_minishell		g_shell;
 */
 
 void			ft_error_cd(struct stat info, char *buf);
-void			ft_cd_home(char *buf);
-void			ft_cd(char *buf);
+int				ft_cd_home();
+int				ft_cd(char *buf);
 
 /*
  ** echo.c
 */
 
 char			*ft_str_add(char *s1, char const *s2);
-void			ft_check_quote(char *buf, char *type_quote);
+char			*ft_check_quote(char *buf);
 char			*ft_str_del_char(char *str, char c);
-void			ft_echo(char *buf);
+int				ft_echo(char *buf);
 
 /*
  ** export.c
 */
 
-void			ft_env(char *buf, char **env);
+int				ft_env(char *buf, char **env);
+int				ft_get_var(int i);
 void			ft_error_export(char *buf);
 void			ft_sort_env(char **env);
 char			**ft_add_var(char **env, char *buf, int len_env, int i);
 void			ft_del_var(char **env, int len);
 int				ft_find_var(char **env, char *var, char c);
 int				ft_change_var(char **env, int len);
-void			ft_export(char *buf);
+int				ft_export(char *buf);
 
 /*
  ** ls.c
 */
 
-void			ft_ls(char *buf);
+int				ft_ls(char *buf);
 
 /*
  ** main.c
 */
 
 int				ft_print_prompt();
-int			ft_get_cmd(char *buf);
+int				ft_get_cmd(char *buf);
 
 /*
  ** pwd.c
 */
 
-void			ft_pwd_error(char *buf, int error);
-void			ft_pwd(char *buf);
+int				ft_pwd_error(char *buf, int error);
+int				ft_pwd(char *buf);
 
 /*
  ** unset.c
 */
 
-void			ft_unset(char *buf);
+int				ft_unset(char *buf);
 
 #endif

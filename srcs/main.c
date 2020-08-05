@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/28 14:55:03 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/31 16:57:56 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,33 +53,39 @@ int			ft_copy_env(const char **env)
 int			ft_get_cmd(char *buf)
 {
 	int		i;
+	int		res;
 
 	i = 0;
+	res = 1;
 	while (buf[i] && buf[i] == ' ')
 		i++;
 	if (!ft_strncmp(&buf[i], "cd", ft_strlen("cd")))
-		ft_cd(&buf[i + 2]);
+		res = ft_cd(&buf[i + 2]);
 	else if (!ft_strncmp(&buf[i], "pwd", ft_strlen("pwd")))
-		ft_pwd(&buf[i + 3]);
-		else if (!ft_strncmp(&buf[i], "export ", ft_strlen("export")))
-			ft_export(&buf[i + ft_strlen("export")]);
+		res = ft_pwd(&buf[i + ft_strlen("pwd")]);
+	else if (!ft_strncmp(&buf[i], "export ", ft_strlen("export")))
+		res = ft_export(&buf[i + ft_strlen("export")]);
 	else if (!ft_strncmp(&buf[i], "env", ft_strlen("env")))
-		ft_env(&buf[i + ft_strlen("env")], g_shell.env);
+		res = ft_env(&buf[i + ft_strlen("env")], g_shell.env);
 	else if (!ft_strncmp(&buf[i], "echo", ft_strlen("echo")))
-		ft_echo(&buf[i + ft_strlen("echo")]);
+		res = ft_echo(&buf[i + ft_strlen("echo")]);
 	else if (!(ft_strncmp(&buf[i], "ls", ft_strlen("ls"))))
-		ft_ls(&buf[i + ft_strlen("ls")]);
+		res = ft_ls(&buf[i + ft_strlen("ls")]);
 	else if (!(ft_strncmp(&buf[i], "unset", ft_strlen("unset"))))
-		ft_unset(&buf[i + ft_strlen("unset")]);
+		res = ft_unset(&buf[i + ft_strlen("unset")]);
 	else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
-		return (0);
+		res = 0;
 	else
 		ft_printf(1, "minishell: command not found %s", buf);
-//	free(g_shell.output);
-//	g_shell.output = NULL;
 	free(buf);
 	buf = NULL;
-	return (1);
+	return (res);
+}
+
+void		ft_no_leaks(char *buf)
+{
+	free(buf);
+	buf = NULL;
 }
 
 int			ft_print_prompt()
@@ -100,12 +106,12 @@ int			ft_print_prompt()
 	ret = read(0, g_shell.buf, BUF_SIZE);
 	g_shell.buf[ret] = '\0';
 	buf = ft_strdup(g_shell.buf);
-	ft_check_quote(buf, g_shell.buf);
-	free(buf);
-	buf = NULL;
-	res = ft_get_cmd(g_shell.output);
-	free(g_shell.dir);
-	g_shell.dir = NULL;
+	buf = ft_check_quote(buf);
+	if (g_shell.quote[0] == S_QUOTE)
+		buf = ft_str_del_char(buf, S_QUOTE);
+	if (g_shell.quote[0] == '"')
+		buf = ft_str_del_char(buf, '"');
+	res = ft_get_cmd(buf);
 	return (res);
 }
 

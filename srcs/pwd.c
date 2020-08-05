@@ -6,53 +6,55 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:37 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/23 15:13:39 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/07/31 16:56:54 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-void		ft_pwd_error(char *buf, int error)
+int			ft_pwd_error(char *buf, int error)
 {
 	if (error == 0)
 		ft_printf(1, "pwd: too many arguments\n");
 	else if (error == 1)
 		ft_printf(1, "minishell: command not found pwd%s\n", buf);
+	return (1);
 }
 
-void		ft_pwd(char *buf)
+int			ft_pwd(char *buf)
 {
 	char	*pwd;
 	int		i;
-	char	quote[1];
 
 	i = 0;
+	if (buf[i] != ' ' && buf[i] != ';' && buf[i] != '\n' && buf[i] != '\0')
+		return ((ft_pwd_error(buf, 1)));
 	while (buf[i] == ' ')
 		i++;
-	if (buf[i] != '\n' && buf[i] != ';')
+	if (buf[i] != '\0' && buf[i] != '\n' && buf[i] != ';')
 	{
-		ft_check_quote(buf, quote);
-		if (i != 0)
-			ft_pwd_error(buf, 0);
-		else
-			ft_pwd_error(buf, 1);
-		return;
+		ft_pwd_error(buf, 0);
+		while (buf[i] && buf[i] != ';')
+			i++;
+		if (buf[i] == ';')
+		{
+			g_shell.tmp = ft_strdup(&buf[i + 1]);
+			free(buf);
+			buf = g_shell.tmp;
+			return (ft_get_cmd(buf));
+		}
 	}
-	ft_check_quote(buf, quote);
 	if (!(pwd = malloc(sizeof(char) * BUF_SIZE + 1)))
-		return;
+		return ((i = 0 * ft_printf(1, "MiniShell: error malloc\n")));
 	pwd = getcwd(pwd, BUF_SIZE);
 	pwd[BUF_SIZE] = '\0';
 	ft_printf(1, "%s\n", pwd);
 	free(pwd);
 	pwd = NULL;
-	if (g_shell.output[i++] == ';')
+	if (buf[i++] == ';')
 	{
-		while (g_shell.output[i] && g_shell.output[i] == ' ')
-			i++;
-		ft_strlcpy(g_shell.output, &g_shell.output[i], ft_strlen(g_shell.output));
-		ft_get_cmd(g_shell.output);
-		free(g_shell.output);
-		g_shell.output = NULL;
+		pwd = ft_strdup(&buf[i]);
+		return (ft_get_cmd(pwd));
 	}
+	return (1);
 }
