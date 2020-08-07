@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/31 16:59:48 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/08/07 15:29:38 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <signal.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <dirent.h>
 #include "../libft/ft_printf/ft_printf.h"

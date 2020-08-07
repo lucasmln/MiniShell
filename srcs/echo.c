@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:25 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/31 15:50:43 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/08/07 16:21:54 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,15 +119,64 @@ char	*ft_str_del_char(char *str, char c)
 	return (str);
 }
 
+int		ft_check_redir(char *buf, int fd)
+{
+	int				i;
+	int				save;
+	int				start[2];
+	struct stat		info;
+
+	i = 0;
+	while (buf[i])
+	{
+		if (buf[i] != '>' && buf[i] != ' ')
+			start[0] = i;
+		if (buf[i] == '>' && buf[i + 1] != '\0' && buf[i + 1] != '>')
+		{
+			while (buf[++i] == ' ')
+				;
+			start[1] = i;
+			if (!buf[i])
+			{
+				fd = -1;
+				break;
+			}
+			while (buf[i] && buf[i] != ' ')
+				i++;
+			save = buf[i];
+			buf[i] = '\0';
+			if ((fd = open(&buf[start[1]], O_TRUNC | O_CREAT | O_RDWR, S_IRUSR | S_IROTH | S_IRGRP | S_IWUSR)) == -1)
+				break;
+			stat(&buf[start[1]], &info);
+			ft_printf(1, "autorisation : %d\n", info.st_mode);
+			i = -1;
+			while (++i <= start[0])
+				write(fd, &buf[i], 1);
+			if (!save)
+				break ;
+			while (i < start[1])
+				i++;
+			buf[i] = save;
+			ft_printf(fd, "%s\n", &buf[i]);
+		}
+		i++;
+	}
+	free(buf);
+	buf = NULL;
+	return (fd);
+}
+
 int		ft_echo(char *buf)
 {
 	int		i;
 	int		flag;
 	int		save;
+	int		fd;
 	char	*tmp;
 
 	i = 0;
 	save = -1;
+	fd = 0;
 	while (buf[i])
 		i++;
 	if (i > 0 && buf[i - 1] == '\n')
@@ -152,7 +201,8 @@ int		ft_echo(char *buf)
 		if (g_shell.output[i] == ';')
 			save = i;
 	save != -1 ? g_shell.output[save] = '\0' : 0;
-	!flag ? ft_printf(1, "%s\n", g_shell.output) : ft_printf(1, "%s", g_shell.output);
+	fd = ft_check_redir(ft_strdup(g_shell.output), fd);
+	fd == 0 ? !flag ? ft_printf(1, "%s\n", g_shell.output) : ft_printf(1, "%s", g_shell.output) : 0;
 	if (save != -1)
 	{
 		g_shell.output[save] = ';';
