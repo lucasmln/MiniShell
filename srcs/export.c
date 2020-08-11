@@ -149,10 +149,12 @@ int			ft_get_var(int i)
 	int		k;
 	int		save_len[2];
 	char	*tmp;
+	int		fd;
 
 	save_len[0] = g_shell.len_exp;
 	save_len[1] = g_shell.len_env;
 	i = 0;
+	fd = 0;
 	while (1)
 	{
 		if (g_shell.output[i] == ';')
@@ -301,9 +303,11 @@ int			ft_export(char *buf)
 	int		k;
 	int		save;
 	char	*tmp;
+	int		fd;
 
 	i = -1;
 	save = -1;
+	fd = 0;
 	while (buf[++i] && save == -1)
 		if (buf[i] == ';')
 			save = i;
@@ -316,11 +320,15 @@ int			ft_export(char *buf)
 	i = 0;
 	while (buf[i] == ' ')
 		i++;
-	if (!buf[i] || (buf[i] == '\n' && !buf[i + 1]) || buf[i] == ';' )
+	if (!buf[i] || (buf[i] == '\n' && !buf[i + 1]) || buf[i] == ';' || buf[i] == '>')
 	{
-		k = 0;
-		while (g_shell.sort_env[k])
-			ft_printf(1, "%s\n", g_shell.sort_env[k++]);
+		k = -1;
+		fd = ft_check_redir(ft_strdup(&buf[i]), fd, 1);
+		while (g_shell.sort_env[++k])
+		{
+			write(fd, g_shell.sort_env[k], ft_strlen(g_shell.sort_env[k]));
+			write(fd, "\n", 1);
+		}
 		if (save != -1)
 		{
 			buf[save] = ';';

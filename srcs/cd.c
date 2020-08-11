@@ -78,7 +78,7 @@ int			ft_cd(char *buf)
 		g_shell.output = NULL;
 		return (ft_get_cmd(tmp));
 	}
-		free(g_shell.output);
-		g_shell.output = NULL;
+	free(g_shell.output);
+	g_shell.output = NULL;
 	return (1);
 }

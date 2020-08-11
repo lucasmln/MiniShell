@@ -60,6 +60,7 @@ char			*ft_str_add(char *s1, char const *s2);
 char			*ft_check_quote(char *buf);
 char			*ft_str_del_char(char *str, char c);
 int				ft_echo(char *buf);
+int				ft_check_redir(char *buf, int fd, int cmd);
 
 /*
  ** export.c

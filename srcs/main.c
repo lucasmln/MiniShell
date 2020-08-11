@@ -103,6 +103,38 @@ int			ft_copy_env(const char **env)
 	return (1);
 }
 
+int			ft_excec(char *buf)
+{
+	struct stat		info;
+	int				i;
+	int				save;
+	int				pos;
+	char			**argv;
+
+	i = -1;
+	save = -1;
+	pos = 0;
+	while (buf[++i] && save == -1)
+		if (buf[i] == ';')
+			save = i;
+	save != -1 ? buf[save] = '\0' : 0;
+	i = 0;
+	while (buf[i] == ' ')
+		i++;
+	g_shell.output = ft_strdup(&buf[i]);
+	i = 0;
+	argv = ft_split(g_shell.output, ' ');
+	if (stat(argv[0], &info) == 0 && S_ISDIR(info.st_mode) == 0)
+	{
+		if (S_IRUSR)
+		{
+			ft_printf(1, "ok\n");
+			exit(execve(argv[0], argv, g_shell.env));
+		}
+	}
+	return (1);
+}
+
 int			ft_get_cmd(char *buf)
 {
 	int		i;
@@ -127,19 +159,15 @@ int			ft_get_cmd(char *buf)
 		res = ft_ls(&buf[i + ft_strlen("ls")]);
 	else if (!(ft_strncmp(&buf[i], "unset", ft_strlen("unset"))))
 		res = ft_unset(&buf[i + ft_strlen("unset")]);
+	else if (!ft_strncmp(&buf[i], "bash", ft_strlen("bash")))
+		res = ft_excec(&buf[i + ft_strlen("bash")]);
 	else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
 		res = 0;
 	else
-		ft_printf(1, "minishell: command not found %s", buf);
+		ft_printf(1, "minishell: command not found %s\n", buf);
 	free(buf);
 	buf = NULL;
 	return (res);
-}
-
-void		ft_no_leaks(char *buf)
-{
-	free(buf);
-	buf = NULL;
 }
 
 int			ft_print_prompt()
@@ -149,9 +177,6 @@ int			ft_print_prompt()
 	int		res;
 	char	*buf;
 
-	signal(SIGQUIT, ft_get_signal);
-	signal(SIGINT, ft_get_signal);
-	signal(SIGTERM, ft_get_signal);
 	g_shell.dir = getcwd(g_shell.dir, BUF_SIZE);
 	i = ft_strlen(g_shell.dir);
 	while (i >= 0 && g_shell.dir[i] != '/')
@@ -180,6 +205,8 @@ int			main(int ac, char **av, const char **env)
 	(void)av;
 	if (!(ft_copy_env(env)))
 		return (-1);
+	signal(SIGINT, ft_get_signal);
+	signal(SIGQUIT, ft_get_signal);
 	while (ft_print_prompt())
 		;
 }

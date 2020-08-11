@@ -119,7 +119,7 @@ char	*ft_str_del_char(char *str, char c)
 	return (str);
 }
 
-int		ft_check_redir(char *buf, int fd)
+int		ft_check_redir(char *buf, int fd, int cmd)
 {
 	int				i;
 	int				save;
@@ -131,13 +131,14 @@ int		ft_check_redir(char *buf, int fd)
 	{
 		if (buf[i] != '>' && buf[i] != ' ')
 			start[0] = i;
-		if (buf[i] == '>' && buf[i + 1] != '\0' && buf[i + 1] != '>')
+		if (buf[i] == '>' && buf[i + 1] != '>')
 		{
 			while (buf[++i] == ' ')
 				;
 			start[1] = i;
 			if (!buf[i])
 			{
+				ft_printf(1, "minishell: parse error after >\n");
 				fd = -1;
 				break;
 			}
@@ -147,8 +148,9 @@ int		ft_check_redir(char *buf, int fd)
 			buf[i] = '\0';
 			if ((fd = open(&buf[start[1]], O_TRUNC | O_CREAT | O_RDWR, S_IRUSR | S_IROTH | S_IRGRP | S_IWUSR)) == -1)
 				break;
+			if (cmd)
+				break;
 			stat(&buf[start[1]], &info);
-			ft_printf(1, "autorisation : %d\n", info.st_mode);
 			i = -1;
 			while (++i <= start[0])
 				write(fd, &buf[i], 1);
@@ -157,7 +159,7 @@ int		ft_check_redir(char *buf, int fd)
 			while (i < start[1])
 				i++;
 			buf[i] = save;
-			ft_printf(fd, "%s\n", &buf[i]);
+			ft_printf(fd, "%s", ft_str_add(&buf[i], "\n"));
 		}
 		i++;
 	}
@@ -201,7 +203,7 @@ int		ft_echo(char *buf)
 		if (g_shell.output[i] == ';')
 			save = i;
 	save != -1 ? g_shell.output[save] = '\0' : 0;
-	fd = ft_check_redir(ft_strdup(g_shell.output), fd);
+	fd = ft_check_redir(ft_strdup(g_shell.output), fd, 0);
 	fd == 0 ? !flag ? ft_printf(1, "%s\n", g_shell.output) : ft_printf(1, "%s", g_shell.output) : 0;
 	if (save != -1)
 	{
