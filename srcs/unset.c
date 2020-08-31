@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/25 18:18:46 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/31 14:01:02 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/08/31 16:32:39 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,11 +45,13 @@ int			ft_unset(char *buf)
 	int		k;
 	int		save;
 	int		error;
+	int		fd;
 	char	*tmp;
 
 	i = -1;
 	save = -1;
 	error = 0;
+	fd = 0;
 	while (buf[++i] && save == -1)
 		if (buf[i] == ';')
 			save = i;
@@ -78,14 +80,27 @@ int			ft_unset(char *buf)
 		i = 0;
 		while (ft_isalnum(g_shell.output[i]) || g_shell.output[i] == '_')
 			i++;
+		if (g_shell.output[i] == '>')
+		{
+			k = i;
+			while (g_shell.output[++i] == ' ')
+				;
+			while (g_shell.output[i] && g_shell.output[i] != ' ')
+				i++;
+			g_shell.c = g_shell.output[i];
+			g_shell.output[i] = '\0';
+			g_shell.tmp = ft_strdup(&g_shell.output[k]);
+			fd = ft_check_redir(g_shell.tmp, fd, 0);
+			g_shell.output[i] = g_shell.c;
+		}
 		if (error == 0 && g_shell.output[i] != ' ' && g_shell.output[i] != '\0')
 		{
 			error = g_shell.output[i + 1];
 			g_shell.output[i + 1] = '\0';
 			ft_error_unset(2, g_shell.output);
 			g_shell.output[i + 1] = error;
-			while (g_shell.output[i] && g_shell.output[i] == ' ')
-				i++;
+			//while (g_shell.output[i] && g_shell.output[i] == ' ')
+			//	i++;
 		}
 		else if (error != 0 && g_shell.output[i] != ' ' && g_shell.output[i] != '\0')
 			while (g_shell.output[i] && g_shell.output[i] != ' ')

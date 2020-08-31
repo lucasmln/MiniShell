@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:15:40 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/31 13:59:34 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/08/31 16:47:30 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,17 +16,16 @@ int			ft_env(char *buf, char **env)
 {
 	int		i;
 	char	*tmp;
+	int		fd;
+	int		k;
 
 	i = 0;
+	fd = 1;
 	tmp = NULL;
-	while (buf[i])
-		i++;
-	if (i > 0 && buf[i - 1] == '\n')
-		buf[i - 1] = '\0';
-	i = 0;
+	k = 0;
 	while (buf[i] == ' ')
 		i++;
-	if (buf [i] != ';' && buf[i] != '\0')
+	if (buf [i] != ';' && buf[i] != '\0' && buf[i] != '>')
 	{
 		if (i == 0)
 			ft_printf(1, "minishell: command not found env%s\n", buf);
@@ -36,9 +35,30 @@ int			ft_env(char *buf, char **env)
 	}
 	if (buf[i] == ';')
 		tmp = ft_strdup(&buf[i + 1]);
-	i = 0;
-	while (env[i])
-		ft_printf(1, "%s\n", env[i++]);
+	if (buf[i] == '>')
+	{
+		k = i;
+		while (buf[++i] == ' ')
+			;
+		while (buf[i] && buf[i] != ' ')
+			i++;
+		g_shell.c = buf[i];
+		buf[i] = '\0';
+		g_shell.tmp = ft_strdup(&buf[k]);
+		buf[i] = g_shell.c;
+		fd = ft_check_redir(g_shell.tmp, fd, 0);
+		while (buf[++i])
+			if (buf[i] != ' ' && buf[i] != '\0')
+				k = -1;
+	}
+	i = -1;
+	while (k != -1 && env[++i])
+	{
+		write(fd, env[i], ft_strlen(env[i]));
+		write(fd, "\n", 1);
+	}
+	if (k == -1)
+		ft_printf(1, "env: take no argument\n");
 	if (tmp)
 		return (ft_get_cmd(tmp));
 	return (1);
@@ -163,6 +183,19 @@ int			ft_get_var(int i)
 			free(g_shell.output);
 			ft_sort_env(g_shell.sort_env);
 			return (ft_get_cmd(tmp));
+		}
+		if (g_shell.output[i] == '>')
+		{
+			k = i;
+			while (g_shell.output[++i] == ' ')
+				;
+			while (g_shell.output[i] && g_shell.output[i] != ' ')
+				i++;
+			g_shell.c = g_shell.output[i];
+			g_shell.output[i] = '\0';
+			g_shell.tmp = ft_strdup(&g_shell.output[k]);
+			ft_check_redir(g_shell.tmp, fd, 0);
+			g_shell.output[i] = g_shell.c;
 		}
 		if (!ft_isalnum(g_shell.output[i]) && g_shell.output[i] != '_' && g_shell.output[i] != '=' && g_shell.output[i] != ' ' && g_shell.output[i] != '\0')
 		{

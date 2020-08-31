@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/08/07 15:29:38 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/08/31 17:12:04 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ typedef struct		s_minishell
 	int		len_exp;
 	int		len_env;
 	int		i;
+	char	c;
 	int		ret;
 }					t_minishell;
 
@@ -49,7 +50,7 @@ t_minishell		g_shell;
 */
 
 void			ft_error_cd(struct stat info, char *buf);
-int				ft_cd_home();
+int				ft_cd_home(char *buf, int save);
 int				ft_cd(char *buf);
 
 /*

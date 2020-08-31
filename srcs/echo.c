@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:25 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/08/07 16:21:54 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/08/31 15:37:31 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,6 +127,8 @@ int		ft_check_redir(char *buf, int fd, int cmd)
 	struct stat		info;
 
 	i = 0;
+	start[0] = 0;
+	start[1] = 0;
 	while (buf[i])
 	{
 		if (buf[i] != '>' && buf[i] != ' ')
@@ -153,12 +155,14 @@ int		ft_check_redir(char *buf, int fd, int cmd)
 			stat(&buf[start[1]], &info);
 			i = -1;
 			while (++i <= start[0])
-				write(fd, &buf[i], 1);
+				if (buf[i] != '>')
+					write(fd, &buf[i], 1);
 			if (!save)
 				break ;
 			while (i < start[1])
 				i++;
 			buf[i] = save;
+			buf = ft_str_del_char(buf, '>');
 			ft_printf(fd, "%s", ft_str_add(&buf[i], "\n"));
 		}
 		i++;
