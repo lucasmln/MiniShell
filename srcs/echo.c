@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:25 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/08/31 15:37:31 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/01 14:53:40 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,12 +119,50 @@ char	*ft_str_del_char(char *str, char c)
 	return (str);
 }
 
+int		ft_double_redir(char *buf, int fd, int i, int stop)
+{
+	int				k;
+	int				save[2];
+	int				start;
+	int				check;
+	char			file_buf[2048];
+
+	check = 0;
+	while (buf[++i] == ' ')
+		;
+	if (!buf[i])
+		return (ft_printf(1, "minishell: no redirecton after >>\n") - 30);
+	start = i;
+	while (buf[i] && buf[i] != ' ')
+		i++;
+	save[0] = buf[i];
+	buf[i] = '\0';
+	if ((fd = open(&buf[start], O_CREAT | O_RDWR , S_IRUSR | S_IROTH | S_IRGRP | S_IWUSR)) == -1)
+		return (-1);
+	while ((k = read(fd, file_buf, BUF_SIZE)))
+		;
+	k = -1;
+	while (++k <= stop && stop > 0 )
+		write(fd, &buf[k], 1);
+	if (!save[0])
+		return (write(fd, "\n", 1) ? fd : fd);
+	while (k < start)
+		k++;
+	buf[i] = save[0];
+	if (!stop)
+		while (buf[++i] == ' ')
+			;
+	write(fd, &buf[i], ft_strlen(&buf[i]));
+	write(fd, "\n", 1);
+	return (fd);
+}
+
 int		ft_check_redir(char *buf, int fd, int cmd)
 {
 	int				i;
+	int				k;
 	int				save;
 	int				start[2];
-	struct stat		info;
 
 	i = 0;
 	start[0] = 0;
@@ -152,19 +190,26 @@ int		ft_check_redir(char *buf, int fd, int cmd)
 				break;
 			if (cmd)
 				break;
-			stat(&buf[start[1]], &info);
-			i = -1;
-			while (++i <= start[0])
-				if (buf[i] != '>')
-					write(fd, &buf[i], 1);
+			k = -1;
+			while (++k <= start[0])
+				if (buf[k] != '>')
+					write(fd, &buf[k], 1) ? start[1] = -1 : 0;
 			if (!save)
+			{
+				write(fd, "\n", 1);
 				break ;
-			while (i < start[1])
-				i++;
+			}
+			while (k < i)
+				k++;
 			buf[i] = save;
-			buf = ft_str_del_char(buf, '>');
-			ft_printf(fd, "%s", ft_str_add(&buf[i], "\n"));
+			while (buf[i] == ' ')
+				i++;
+			start[1] == -1 ? write(fd, " ", 1) : 0;
+			write(fd, &buf[i], ft_strlen(&buf[i]));
+			write(fd, "\n", 1);
 		}
+		else if (buf[i] == '>' && buf[i + 1] == '>')
+			fd = ft_double_redir(buf, fd, ++i, start[0]);
 		i++;
 	}
 	free(buf);
