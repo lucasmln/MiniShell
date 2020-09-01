@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/07/31 16:57:56 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/01 17:02:08 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,8 +109,12 @@ int			ft_excec(char *buf)
 	int				i;
 	int				save;
 	int				pos;
+	pid_t			pid;
+	int				status;
 	char			**argv;
 
+	if ((pid = fork()))
+		return (-1);
 	i = -1;
 	save = -1;
 	pos = 0;
@@ -128,8 +132,9 @@ int			ft_excec(char *buf)
 	{
 		if (S_IRUSR)
 		{
+			pid = waitpid(-1, &status, 0);
+			execve(argv[0], argv, g_shell.env);
 			ft_printf(1, "ok\n");
-			exit(execve(argv[0], argv, g_shell.env));
 		}
 	}
 	return (1);
@@ -160,11 +165,15 @@ int			ft_get_cmd(char *buf)
 	else if (!(ft_strncmp(&buf[i], "unset", ft_strlen("unset"))))
 		res = ft_unset(&buf[i + ft_strlen("unset")]);
 	else if (!ft_strncmp(&buf[i], "bash", ft_strlen("bash")))
+	{
 		res = ft_excec(&buf[i + ft_strlen("bash")]);
+		ft_printf(1, "after\n");
+	}
 	else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
 		res = 0;
 	else
 		ft_printf(1, "minishell: command not found %s\n", buf);
+	ft_printf(1, "hey\n");
 	free(buf);
 	buf = NULL;
 	return (res);
@@ -207,6 +216,7 @@ int			main(int ac, char **av, const char **env)
 		return (-1);
 	signal(SIGINT, ft_get_signal);
 	signal(SIGQUIT, ft_get_signal);
+	ft_printf(1, "start\n");
 	while (ft_print_prompt())
 		;
 }
