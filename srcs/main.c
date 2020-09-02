@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/02 13:25:24 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/02 17:08:30 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,8 @@ int			ft_copy_env(const char **env)
 
 int			ft_excec(char *buf)
 {
-	struct stat		info;
+	buf = NULL;
+/*	struct stat		info;
 	int				i;
 	int				save;
 	int				pos;
@@ -136,8 +137,125 @@ int			ft_excec(char *buf)
 				exit(execve(argv[0], argv, g_shell.env));
 			waitpid(pid, &status, 0);
 		}
-	}
+	}*/
 	return (1);
+}
+
+char		*ft_get_path(char *path)
+{
+	int		i;
+	int		save;
+	char	*new;
+
+	i = 0;
+	if (!path)
+		return (NULL);
+	if (ft_strlen(path) == 0)
+		return (NULL);
+	while (path[i] && path[i] != ':')
+		i++;
+	save = path[i];
+	path[i] = '\0';
+	new = ft_strdup(path);
+	path[i] = save;
+	return (new);
+}
+
+int			ft_exe(char *buf)
+{
+	int				temp;
+	int				pos;
+	int				save;
+	int				i;
+	int				k;
+	int				status;
+	char			*path;
+	char			*save_path;
+	char			*cmd;
+	char			*try_path;
+	char			*cmd_path;
+	char			**argv;
+	struct stat		info;
+	pid_t			pid;
+
+	(void)buf;
+	i = 0;
+	pos = 0;
+	while (ft_strncmp(g_shell.sort_env[pos], "PATH=", 5))
+		pos++;
+	path = ft_strdup(&g_shell.sort_env[pos][5]);
+	save_path = path;
+	while (buf[i] && buf[i] != ' ')
+		i++;
+	save = buf[i];
+	buf[i] = '\0';
+	cmd = ft_strdup(buf);
+	buf[i] = save;
+	argv = ft_split(buf, ' ');
+	temp = 0;
+	while ((try_path = ft_get_path(path)) != NULL)
+	{
+		if (!(cmd_path = malloc(sizeof(char) * (ft_strlen(cmd) + ft_strlen(try_path) + 2))))
+			return (-1);
+		i = -1;
+		while (try_path[++i])
+			cmd_path[i] = try_path[i];
+		cmd_path[i++] = '/';
+		k = -1;
+		while (cmd[++k])
+			cmd_path[i + k] = cmd[k];
+		cmd_path[i + k] = '\0';
+		if (!stat(cmd_path, &info))
+		{
+			pid = fork();
+			if (pid == 0)
+				exit(execve(cmd_path, argv, g_shell.env));
+			else
+			{
+				waitpid(pid, &status, 0);
+				i = -1;
+				while (argv[++i])
+				{
+					free(argv[i]);
+					argv[i] = NULL;
+				}
+				free(argv);
+				argv = NULL;
+				free(cmd_path);
+				cmd_path = NULL;
+				free(cmd);
+				cmd = NULL;
+				free(save_path);
+				save_path = NULL;
+				free(try_path);
+				try_path = NULL;
+				free(cmd_path);
+				cmd_path = NULL;
+				return (1);
+			}
+		}
+		free(try_path);
+		try_path = NULL;
+		free(cmd_path);
+		cmd_path = NULL;
+		i = 0;
+		while (path[i] && path[i] != ':')
+			i++;
+			path = &path[i + 1];
+	}
+	i = -1;
+	while (argv[++i])
+	{
+		free(argv[i]);
+		argv[i] = NULL;
+	}
+	free(save_path);
+	save_path = NULL;
+	free(cmd);
+	cmd = NULL;
+	free(argv);
+	argv = NULL;
+	return (0);
 }
 
 int			ft_get_cmd(char *buf)
@@ -171,9 +289,8 @@ int			ft_get_cmd(char *buf)
 	}
 	else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
 		res = 0;
-	else
+	else if (!ft_exe(&buf[i]))
 		ft_printf(1, "minishell: command not found %s\n", buf);
-	ft_printf(1, "hey\n");
 	free(buf);
 	buf = NULL;
 	return (res);
