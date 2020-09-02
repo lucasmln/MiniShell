@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/01 17:02:08 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/02 13:25:24 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,9 +132,9 @@ int			ft_excec(char *buf)
 	{
 		if (S_IRUSR)
 		{
-			pid = waitpid(-1, &status, 0);
-			execve(argv[0], argv, g_shell.env);
-			ft_printf(1, "ok\n");
+			if (pid == 0)
+				exit(execve(argv[0], argv, g_shell.env));
+			waitpid(pid, &status, 0);
 		}
 	}
 	return (1);
