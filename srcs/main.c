@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/03 13:29:23 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/03 15:09:45 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,7 @@ void		ft_free_exe(char **argv, char *cmd, char *save_path, char *binary)
 	binary = NULL;
 }
 
-char		*ft_get_path_cmd(char *buf)
+char		*ft_get_path_cmd(char *buf, char **binary)
 {
 	int		i;
 	char	*s1;
@@ -160,7 +160,10 @@ char		*ft_get_path_cmd(char *buf)
 		{
 			buf[i] = '\0';
 			if (!(ft_strncmp("./", buf, 2)))
+			{
 				s1 = ft_strdup("./");
+				binary[0] = ft_strdup(&buf[2]);
+			}
 			else
 				s1 = ft_strdup(buf);
 			buf[i] = '>';
@@ -209,7 +212,7 @@ int			ft_exe(char *buf)
 	while (buf[++i])
 		if (buf[i] == ';')
 			save[1] = i;
-	fd = ft_check_redir(ft_strdup(buf), fd, 0);
+	fd = ft_check_redir(ft_strdup(buf), fd, 1);
 	i = 0;
 	if (save[1] != -1)
 		buf[save[1]] = '\0';
@@ -219,10 +222,9 @@ int			ft_exe(char *buf)
 	save_path = path;
 	while (buf[i] && buf[i] != ' ')
 		i++;
-	cmd = ft_get_path_cmd(buf);
-	if (!(ft_strncmp(buf, "./", ft_strlen("./"))))
-		binary = ft_strdup(&cmd[2]);
-	ft_printf(1, "binary = %s, cmd  = %s\n\n", binary, cmd);
+	cmd = ft_get_path_cmd(buf, &binary);
+//	if (!(ft_strncmp(buf, "./", ft_strlen("./"))))
+//		binary = ft_strdup(&buf[2]);
 /*	save[0] = buf[i];
 	buf[i] = '\0';
 	if (!(ft_strncmp(buf, "./", ft_strlen("./"))))
@@ -234,6 +236,7 @@ int			ft_exe(char *buf)
 		cmd = ft_strdup(buf);
 	buf[i] = save[0];
 */	argv = ft_split(buf, ' ');
+				ft_printf(1, "binary = %s, cmd  = %s\n\n", binary, cmd);
 	while ((try_path = ft_get_path(path)) != NULL)
 	{
 		if (!(cmd_path = malloc(sizeof(char) * (ft_strlen(cmd) + ft_strlen(try_path) + 2))))
@@ -251,10 +254,10 @@ int			ft_exe(char *buf)
 			pid = fork();
 			if (pid == 0)
 			{
-				dup2(fd, STDOUT_FILENO);
-				dup2(fd, STDERR_FILENO);
-				if (binary && !stat(binary, &info))
+			//	dup2(fd, STDERR_FILENO);
+				if (binary/* && !stat(binary, &info)*/)
 				{
+				dup2(fd, STDOUT_FILENO);
 					exit((execve(binary, argv, g_shell.env)));
 				}
 				else
