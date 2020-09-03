@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:25 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/02 13:30:42 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/03 12:51:16 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,7 +186,7 @@ int		ft_check_redir(char *buf, int fd, int cmd)
 				i++;
 			save = buf[i];
 			buf[i] = '\0';
-			if ((fd = open(&buf[start[1]], O_TRUNC | O_CREAT | O_RDWR, S_IRUSR | S_IROTH | S_IRGRP | S_IWUSR)) == -1)
+			if ((fd = open(&buf[start[1]], O_TRUNC | O_CREAT | O_RDWR, S_IRUSR | S_IROTH | S_IRGRP | S_IWUSR, 0640)) == -1)
 				break;
 			if (cmd)
 				break;

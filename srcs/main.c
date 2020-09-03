@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/02 17:08:30 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/03 13:29:23 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,44 +103,6 @@ int			ft_copy_env(const char **env)
 	return (1);
 }
 
-int			ft_excec(char *buf)
-{
-	buf = NULL;
-/*	struct stat		info;
-	int				i;
-	int				save;
-	int				pos;
-	pid_t			pid;
-	int				status;
-	char			**argv;
-
-	if ((pid = fork()))
-		return (-1);
-	i = -1;
-	save = -1;
-	pos = 0;
-	while (buf[++i] && save == -1)
-		if (buf[i] == ';')
-			save = i;
-	save != -1 ? buf[save] = '\0' : 0;
-	i = 0;
-	while (buf[i] == ' ')
-		i++;
-	g_shell.output = ft_strdup(&buf[i]);
-	i = 0;
-	argv = ft_split(g_shell.output, ' ');
-	if (stat(argv[0], &info) == 0 && S_ISDIR(info.st_mode) == 0)
-	{
-		if (S_IRUSR)
-		{
-			if (pid == 0)
-				exit(execve(argv[0], argv, g_shell.env));
-			waitpid(pid, &status, 0);
-		}
-	}*/
-	return (1);
-}
-
 char		*ft_get_path(char *path)
 {
 	int		i;
@@ -161,38 +123,117 @@ char		*ft_get_path(char *path)
 	return (new);
 }
 
+void		ft_free_exe(char **argv, char *cmd, char *save_path, char *binary)
+{
+	int		i;
+
+	i = 0;
+	while (argv[i])
+	{
+		free(argv[i]);
+		argv[i] = NULL;
+		i++;
+	}
+	free(argv);
+	argv = NULL;
+	free(cmd);
+	cmd = NULL;
+	free(save_path);
+	save_path = NULL;
+	if (binary)
+		free(binary);
+	binary = NULL;
+}
+
+char		*ft_get_path_cmd(char *buf)
+{
+	int		i;
+	char	*s1;
+	char	*s2;
+
+	i = 0;
+	s2 = NULL;
+	s1 = NULL;
+	while (buf[i])
+	{
+		if (buf[i] == '>')
+		{
+			buf[i] = '\0';
+			if (!(ft_strncmp("./", buf, 2)))
+				s1 = ft_strdup("./");
+			else
+				s1 = ft_strdup(buf);
+			buf[i] = '>';
+			if (buf[++i] == '>')
+				i++;
+			while (buf[i] == ' ')
+				i++;
+			while (buf[i] && buf[i] != ' ')
+				i++;
+			while (buf[i] == ' ')
+				i++;
+			if (buf[i])
+				s2 = ft_strdup(&buf[i]);
+		}
+		i++;
+	}
+	if (!s1)
+		s1 = ft_strdup(buf);
+	return (ft_str_add(s1, s2));
+}
+
 int			ft_exe(char *buf)
 {
-	int				temp;
 	int				pos;
-	int				save;
+	int				save[2];
 	int				i;
+	int				fd;
 	int				k;
 	int				status;
 	char			*path;
 	char			*save_path;
 	char			*cmd;
+	char			*binary;
 	char			*try_path;
 	char			*cmd_path;
+	char			*tmp;
 	char			**argv;
 	struct stat		info;
 	pid_t			pid;
 
-	(void)buf;
-	i = 0;
+	i = -1;
 	pos = 0;
+	save[1] = -1;
+	binary = NULL;
+	fd = 1;
+	while (buf[++i])
+		if (buf[i] == ';')
+			save[1] = i;
+	fd = ft_check_redir(ft_strdup(buf), fd, 0);
+	i = 0;
+	if (save[1] != -1)
+		buf[save[1]] = '\0';
 	while (ft_strncmp(g_shell.sort_env[pos], "PATH=", 5))
 		pos++;
 	path = ft_strdup(&g_shell.sort_env[pos][5]);
 	save_path = path;
 	while (buf[i] && buf[i] != ' ')
 		i++;
-	save = buf[i];
+	cmd = ft_get_path_cmd(buf);
+	if (!(ft_strncmp(buf, "./", ft_strlen("./"))))
+		binary = ft_strdup(&cmd[2]);
+	ft_printf(1, "binary = %s, cmd  = %s\n\n", binary, cmd);
+/*	save[0] = buf[i];
 	buf[i] = '\0';
-	cmd = ft_strdup(buf);
-	buf[i] = save;
-	argv = ft_split(buf, ' ');
-	temp = 0;
+	if (!(ft_strncmp(buf, "./", ft_strlen("./"))))
+	{
+		cmd = ft_strdup("./");
+		binary = ft_strdup(&buf[2]);
+	}
+	else
+		cmd = ft_strdup(buf);
+	buf[i] = save[0];
+*/	argv = ft_split(buf, ' ');
 	while ((try_path = ft_get_path(path)) != NULL)
 	{
 		if (!(cmd_path = malloc(sizeof(char) * (ft_strlen(cmd) + ft_strlen(try_path) + 2))))
@@ -209,53 +250,44 @@ int			ft_exe(char *buf)
 		{
 			pid = fork();
 			if (pid == 0)
-				exit(execve(cmd_path, argv, g_shell.env));
+			{
+				dup2(fd, STDOUT_FILENO);
+				dup2(fd, STDERR_FILENO);
+				if (binary && !stat(binary, &info))
+				{
+					exit((execve(binary, argv, g_shell.env)));
+				}
+				else
+					exit(execve(cmd_path, argv, g_shell.env));
+			
+			}
 			else
 			{
 				waitpid(pid, &status, 0);
-				i = -1;
-				while (argv[++i])
-				{
-					free(argv[i]);
-					argv[i] = NULL;
-				}
-				free(argv);
-				argv = NULL;
-				free(cmd_path);
-				cmd_path = NULL;
-				free(cmd);
-				cmd = NULL;
-				free(save_path);
-				save_path = NULL;
-				free(try_path);
-				try_path = NULL;
-				free(cmd_path);
-				cmd_path = NULL;
-				return (1);
+				save[0] = -1;
+				if (binary && stat(binary, &info))
+					save[0] = 0;
 			}
 		}
 		free(try_path);
 		try_path = NULL;
 		free(cmd_path);
 		cmd_path = NULL;
+		if (save[0] == -1)
+			break ;
 		i = 0;
 		while (path[i] && path[i] != ':')
 			i++;
 			path = &path[i + 1];
 	}
-	i = -1;
-	while (argv[++i])
+	ft_free_exe(argv, cmd, save_path, binary);
+	if (save[1] != -1)
 	{
-		free(argv[i]);
-		argv[i] = NULL;
+		tmp = ft_strdup(&buf[save[1] + 1]);
+		buf[save[1]] = ';';
+		ft_get_cmd(tmp);
 	}
-	free(save_path);
-	save_path = NULL;
-	free(cmd);
-	cmd = NULL;
-	free(argv);
-	argv = NULL;
-	return (0);
+	return (save[0] == -1 ? 1 : -1);
 }
 
 int			ft_get_cmd(char *buf)
@@ -278,18 +310,18 @@ int			ft_get_cmd(char *buf)
 		res = ft_env(&buf[i + ft_strlen("env")], g_shell.env);
 	else if (!ft_strncmp(&buf[i], "echo", ft_strlen("echo")))
 		res = ft_echo(&buf[i + ft_strlen("echo")]);
-	else if (!(ft_strncmp(&buf[i], "ls", ft_strlen("ls"))))
-		res = ft_ls(&buf[i + ft_strlen("ls")]);
+//	else if (!(ft_strncmp(&buf[i], "ls", ft_strlen("ls"))))
+//		res = ft_ls(&buf[i + ft_strlen("ls")]);
 	else if (!(ft_strncmp(&buf[i], "unset", ft_strlen("unset"))))
 		res = ft_unset(&buf[i + ft_strlen("unset")]);
-	else if (!ft_strncmp(&buf[i], "bash", ft_strlen("bash")))
+/*	else if (!ft_strncmp(&buf[i], "./", ft_strlen("./")))
 	{
-		res = ft_excec(&buf[i + ft_strlen("bash")]);
+		res = ft_exe("a.out"&buf[i + ft_strlen("./")]);
 		ft_printf(1, "after\n");
 	}
-	else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
+*/	else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
 		res = 0;
-	else if (!ft_exe(&buf[i]))
+	else if ((res = ft_exe(&buf[i])) == -1 )
 		ft_printf(1, "minishell: command not found %s\n", buf);
 	free(buf);
 	buf = NULL;
