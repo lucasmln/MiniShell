@@ -34,11 +34,20 @@ typedef struct		s_minishell
 	char	*output;
 	char	*dir;
 	char	*tmp;
+	char	*save_buf;
 	char	**env;
 	char	**sort_env;
 	char	quote[1];
+	int		quote_pos[BUF_SIZE];
+	int		i_quote;
 	int		len_exp;
 	int		len_env;
+	int		save;
+	int		*fd;
+	int		nb_fd;
+	int		pipe_fd[2];
+	int		save_pipfd[2];
+	int		pip;
 	int		i;
 	char	c;
 	int		ret;
@@ -51,7 +60,7 @@ t_minishell		g_shell;
 */
 
 void			ft_error_cd(struct stat info, char *buf);
-int				ft_cd_home(char *buf, int save);
+int				ft_cd_home(char *buf);
 int				ft_cd(char *buf);
 
 /*
@@ -62,7 +71,7 @@ char			*ft_str_add(char *s1, char const *s2);
 char			*ft_check_quote(char *buf);
 char			*ft_str_del_char(char *str, char c);
 int				ft_echo(char *buf);
-int				ft_check_redir(char *buf, int fd, int cmd);
+int				*ft_check_redir(char *buf, int fd[], int cmd);
 
 /*
  ** export.c
@@ -88,8 +97,12 @@ int				ft_ls(char *buf);
  ** main.c
 */
 
+int				ft_check_parse(char *buf);
 int				ft_print_prompt();
 int				ft_get_cmd(char *buf);
+int				*ft_init_fd_tab(int *tab, int len);
+char			*ft_del_redir(char *buf);
+int				*ft_close_fd(int *fd);
 
 /*
  ** pwd.c

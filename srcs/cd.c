@@ -21,7 +21,7 @@ void		ft_error_cd(struct stat info, char *buf)
 	g_shell.ret = 1;
 }
 
-int		ft_cd_home(char *buf, int save)
+int		ft_cd_home(char *buf)
 {
 	char	*dir;
 	int		i;
@@ -42,7 +42,7 @@ int		ft_cd_home(char *buf, int save)
 		buf[i] = '\0';
 		g_shell.tmp = ft_strdup(buf);
 		buf[i] = g_shell.c;
-		ft_check_redir(g_shell.tmp, fd, 0);
+		ft_check_redir(g_shell.tmp, &fd, 0);
 		while (buf[i] && buf[i] == ' ')
 			i++;
 	}
@@ -64,13 +64,12 @@ int		ft_cd_home(char *buf, int save)
 		dir = NULL;
 		i = 0;
 	}
-	if (save != -1)
+	if (g_shell.save != -1)
 	{
-		buf[save] = ';';
-		tmp = ft_strdup(&buf[save + 1]);
+		tmp = ft_strdup(&g_shell.save_buf[g_shell.save + 1]);
 		free(g_shell.output);
 		g_shell.output = NULL;
-		return (ft_get_cmd(tmp));
+		return (ft_check_parse(tmp));
 	}
 	return (1);
 }
@@ -81,26 +80,19 @@ int			ft_cd(char *buf)
 	int			i;
 	int			k;
 	int			fd;
-	int			save;
 	int			redir;
 	char		*tmp;
 
-	i = -1;
-	save = -1;
+	i = 0;
 	redir = 0;
 	fd = 1;
 	k = -1;
-	while (buf[++i] && save == -1)
-		if (buf[i] == ';')
-			save = i;
-	i = 0;
-	if (buf[i] != '\0' && buf[i] != ';' && buf[i] != ' ' && buf[i] != '>')
+	if (buf[i] != '\0' && buf[i] != ' ' && buf[i] != '>')
 		return (ft_pwd_error(buf, 1));
-	while (buf[i]!= '\0' && buf[i] == ' ' && buf[i] != ';' && buf[i] != '>')
+	while (buf[i]!= '\0' && buf[i] == ' ' && buf[i] != '>')
 		i++;
-	if (buf[i] == ';' || !buf[i] || buf[i] == '>')
-		return (ft_cd_home(&buf[i], save));
-	save != -1 ? (buf[save] = '\0') : 0;
+	if (!buf[i] || buf[i] == '>')
+		return (ft_cd_home(&buf[i]));
 	i = -1;
 	while (buf[++i])
 		if (buf[i] == '>')
@@ -114,7 +106,7 @@ int			ft_cd(char *buf)
 			g_shell.c = buf[i];
 			buf[i] = '\0';
 			g_shell.tmp = ft_strdup(&buf[k]);
-			fd = ft_check_redir(g_shell.tmp, fd, 0);
+			g_shell.fd = ft_check_redir(g_shell.tmp, g_shell.fd, 0);
 			buf[i] = g_shell.c;
 			while (buf[i] == ' ')
 				i++;
@@ -130,14 +122,14 @@ int			ft_cd(char *buf)
 		ft_printf(1, "cd: error string after redirection\n");
 	else
 		chdir(g_shell.output);
-	if (save != -1)
+	if (g_shell.save != -1)
 	{
-		k != -1 ? buf[k] = '>' : 0 ;
-		buf[save] = ';';
-		tmp = ft_strdup(&buf[save + 1]);
+//		k != -1 ? buf[k] = '>' : 0 ;
+//		buf[save] = ';';
+		tmp = ft_strdup(&g_shell.save_buf[g_shell.save + 1]);
 		free(g_shell.output);
 		g_shell.output = NULL;
-		return (ft_get_cmd(tmp));
+		return (ft_check_parse(tmp));
 	}
 	free(g_shell.output);
 	g_shell.output = NULL;

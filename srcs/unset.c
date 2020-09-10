@@ -52,20 +52,14 @@ int			ft_unset(char *buf)
 	save = -1;
 	error = 0;
 	fd = 0;
-	while (buf[++i] && save == -1)
-		if (buf[i] == ';')
-			save = i;
-	save != -1 ? buf[save] = '\0': 0;
 	i = 0;
-	if (buf[ft_strlen(buf) - 1] == '\n')
-		buf[ft_strlen(buf) - 1] = '\0';
 	while (buf[i] && buf[i] == ' ')
 		i++;
 	if (i == 0 && buf[i])
 		error = ft_error_unset(0, buf);
 	else if (!buf[i])
 		error = ft_error_unset(1, buf);
-	if (error && save == -1)
+	if (error && g_shell.save == -1)
 		return (2);
 	error = 0;
 	g_shell.output = ft_strdup(&buf[i]);
@@ -90,7 +84,7 @@ int			ft_unset(char *buf)
 			g_shell.c = g_shell.output[i];
 			g_shell.output[i] = '\0';
 			g_shell.tmp = ft_strdup(&g_shell.output[k]);
-			fd = ft_check_redir(g_shell.tmp, fd, 0);
+			g_shell.fd = ft_check_redir(g_shell.tmp, g_shell.fd, 0);
 			g_shell.output[i] = g_shell.c;
 		}
 		if (error == 0 && g_shell.output[i] != ' ' && g_shell.output[i] != '\0')
@@ -99,8 +93,6 @@ int			ft_unset(char *buf)
 			g_shell.output[i + 1] = '\0';
 			ft_error_unset(2, g_shell.output);
 			g_shell.output[i + 1] = error;
-			//while (g_shell.output[i] && g_shell.output[i] == ' ')
-			//	i++;
 		}
 		else if (error != 0 && g_shell.output[i] != ' ' && g_shell.output[i] != '\0')
 			while (g_shell.output[i] && g_shell.output[i] != ' ')
@@ -122,11 +114,10 @@ int			ft_unset(char *buf)
 	}
 	free(g_shell.output);
 	g_shell.output = NULL;
-	if (save != -1)
+	if (g_shell.save != -1)
 	{
-		buf[save] = ';';
-		tmp = ft_strdup(&buf[save + 1]);
-		return (ft_get_cmd(tmp));
+		tmp = ft_strdup(&g_shell.save_buf[g_shell.save + 1]);
+		return (ft_check_parse(tmp));
 	}
 	return (1);
 }

@@ -54,6 +54,7 @@ char		*ft_str_add(char *s1, char const *s2)
 char	*ft_check_quote(char *buf)
 {
 	int		i;
+	int		k;
 	int		ret;
 	int		d_quote;
 	int		s_quote;
@@ -61,12 +62,16 @@ char	*ft_check_quote(char *buf)
 
 	i = 0;
 	g_shell.quote[0] = 0;
+	g_shell.i_quote = 0;
+	g_shell.quote_pos[g_shell.i_quote++] = 0;
 	d_quote = 0;
 	s_quote = 0;
 	while (buf[i])
 	{
 		if (!g_shell.quote[0] && (buf[i] == S_QUOTE || buf[i] == '"'))
 			g_shell.quote[0] = buf[i];
+		if (g_shell.quote[0] && buf[i] == g_shell.quote[0])
+			g_shell.quote_pos[g_shell.i_quote++] = i;
 		s_quote = buf[i] == S_QUOTE && S_QUOTE == g_shell.quote[0] ? s_quote + 1: s_quote;
 		d_quote = buf[i] == '"' && '"' == g_shell.quote[0] ? d_quote + 1: d_quote;
 		i++;
@@ -82,17 +87,20 @@ char	*ft_check_quote(char *buf)
 			s_quote > 0 ? ft_printf(1, "quote> ") : ft_printf(1, "dquote> ");
 			ret = read(0, g_shell.buf, BUF_SIZE);
 			g_shell.buf[ret] = '\0';
-			i = 0;
-			while (g_shell.buf[i])
+			k = 0;
+			while (g_shell.buf[k])
 			{
-				s_quote = g_shell.buf[i] == S_QUOTE && S_QUOTE == g_shell.quote[0] ? s_quote + 1: s_quote;
-				d_quote = g_shell.buf[i] == '"' && '"' == g_shell.quote[0] ? d_quote + 1: d_quote;
-				i++;
+				if (buf[k] == g_shell.quote[0])
+					g_shell.quote_pos[g_shell.i_quote++] = i + k;
+				s_quote = g_shell.buf[k] == S_QUOTE && S_QUOTE == g_shell.quote[0] ? s_quote + 1: s_quote;
+				d_quote = g_shell.buf[k] == '"' && '"' == g_shell.quote[0] ? d_quote + 1: d_quote;
+				k++;
 			}
 			if (!(new = ft_str_add(new, g_shell.buf)))
 				return (NULL);
 		}
 	}
+	g_shell.quote_pos[g_shell.i_quote] = -1;
 	return (new);
 }
 
@@ -157,60 +165,55 @@ int		ft_double_redir(char *buf, int fd, int i, int stop)
 	return (fd);
 }
 
-int		ft_check_redir(char *buf, int fd, int cmd)
+int		*ft_check_redir(char *buf, int *fd, int cmd)
 {
 	int				i;
-	int				k;
 	int				save;
 	int				start[2];
 
-	i = 0;
+	i = -1;
 	start[0] = 0;
 	start[1] = 0;
-	while (buf[i])
+	cmd++;
+	g_shell.nb_fd = 0;
+	while (buf[++i])
 	{
-		if (buf[i] != '>' && buf[i] != ' ')
-			start[0] = i;
-		if (buf[i] == '>' && buf[i + 1] != '>')
+		while (buf[i])
 		{
-			while (buf[++i] == ' ')
-				;
-			start[1] = i;
-			if (!buf[i])
+			if (buf[i] != '>' && buf[i] != ' ')
+				start[0] = i;
+			if (buf[i] == '>' && buf[i + 1] != '>')
 			{
-				ft_printf(1, "minishell: parse error after >\n");
-				fd = -1;
-				break;
+				while (buf[++i] == ' ')
+					;
+				start[1] = i;
+				if (!buf[i])
+				{
+					ft_printf(1, "minishell: parse error after >\n");
+					fd[g_shell.nb_fd++] = -1;
+					break;
+				}
+				while (buf[i] && buf[i] != ' ')
+					i++;
+				save = buf[i];
+				buf[i] = '\0';
+				if ((fd[g_shell.nb_fd++] = open(&buf[start[1]], O_TRUNC | O_CREAT | O_RDWR, S_IRUSR | S_IROTH | S_IRGRP | S_IWUSR, 0640)) == -1)
+					break;
+				//if (cmd)
+				//	break;
+				buf[i] = save;
 			}
-			while (buf[i] && buf[i] != ' ')
-				i++;
-			save = buf[i];
-			buf[i] = '\0';
-			if ((fd = open(&buf[start[1]], O_TRUNC | O_CREAT | O_RDWR, S_IRUSR | S_IROTH | S_IRGRP | S_IWUSR, 0640)) == -1)
-				break;
-			if (cmd)
-				break;
-			k = -1;
-			while (++k <= start[0])
-				if (buf[k] != '>')
-					write(fd, &buf[k], 1) ? start[1] = -1 : 0;
-			if (!save)
+			else if (buf[i] == '>' && buf[i + 1] == '>')
 			{
-				write(fd, "\n", 1);
-				break ;
-			}
-			while (k < i)
-				k++;
-			buf[i] = save;
-			while (buf[i] == ' ')
+				fd[g_shell.nb_fd] = ft_double_redir(buf, fd[g_shell.nb_fd], ++i, start[0]);
+				fd[g_shell.nb_fd] >= 0 ? g_shell.nb_fd++ : 0;
 				i++;
-			start[1] == -1 ? write(fd, " ", 1) : 0;
-			write(fd, &buf[i], ft_strlen(&buf[i]));
-			write(fd, "\n", 1);
+			}
+			else
+				i++;
 		}
-		else if (buf[i] == '>' && buf[i + 1] == '>')
-			fd = ft_double_redir(buf, fd, ++i, start[0]);
-		i++;
+		if (!buf[i])
+			break;
 	}
 	free(buf);
 	buf = NULL;
@@ -221,18 +224,13 @@ int		ft_echo(char *buf)
 {
 	int		i;
 	int		flag;
+	int		k;
 	int		save;
-	int		fd;
 	char	*tmp;
 
 	i = 0;
+	k = 0;
 	save = -1;
-	fd = 0;
-	while (buf[i])
-		i++;
-	if (i > 0 && buf[i - 1] == '\n')
-		buf[i - 1] = '\0';
-	i = 0;
 	while (buf[i] && buf[i] == ' ')
 		i++;
 	if (i == 0)
@@ -244,24 +242,27 @@ int		ft_echo(char *buf)
 	flag = ft_strncmp(&buf[i], "-n ", 3) == 0 ? 1 : 0;
 	flag == 1 ? ft_strlcpy(buf, &buf[i + 3], ft_strlen(&buf[i + 3]) + 1) :
 		ft_strlcpy(buf, &buf[i], ft_strlen(&buf[i]) + 1);
-	while (buf[i] == ' ')
-		i++;
 	g_shell.output = ft_strdup(buf);
-	i = -1;
-	while (g_shell.output[++i] && save == -1)
-		if (g_shell.output[i] == ';')
-			save = i;
-	save != -1 ? g_shell.output[save] = '\0' : 0;
-	fd = ft_check_redir(ft_strdup(g_shell.output), fd, 0);
-	fd == 0 ? !flag ? ft_printf(1, "%s\n", g_shell.output) : ft_printf(1, "%s", g_shell.output) : 0;
-	if (save != -1)
+	g_shell.fd = ft_check_redir(ft_strdup(g_shell.output), g_shell.fd, 0);
+	g_shell.output = ft_del_redir(g_shell.output);
+	i = 0;
+	while (i <= g_shell.nb_fd)
 	{
-		g_shell.output[save] = ';';
-		tmp = ft_strdup(&g_shell.output[save + 1]);
+		ft_printf(g_shell.fd[i], "%s", g_shell.output);
+		if (!flag)
+			write(g_shell.fd[i], "\n", 1);
+		i++;
+	}
+	g_shell.fd = ft_close_fd(g_shell.fd);
+	if (g_shell.save != -1)
+	{
+		tmp = ft_strdup(&g_shell.save_buf[g_shell.save + 1]);
+		free(g_shell.save_buf);
+		g_shell.save_buf = NULL;
 	}
 	free(g_shell.output);
 	g_shell.output = NULL;
-	if (save != -1)
-		return (ft_get_cmd(tmp));
+	if (g_shell.save != -1)
+		return (ft_check_parse(tmp));
 	return (1);
 }

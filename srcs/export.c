@@ -46,7 +46,7 @@ int			ft_env(char *buf, char **env)
 		buf[i] = '\0';
 		g_shell.tmp = ft_strdup(&buf[k]);
 		buf[i] = g_shell.c;
-		fd = ft_check_redir(g_shell.tmp, fd, 0);
+		g_shell.fd = ft_check_redir(g_shell.tmp, g_shell.fd, 0);
 		while (buf[++i])
 			if (buf[i] != ' ' && buf[i] != '\0')
 				k = -1;
@@ -194,7 +194,7 @@ int			ft_get_var(int i)
 			g_shell.c = g_shell.output[i];
 			g_shell.output[i] = '\0';
 			g_shell.tmp = ft_strdup(&g_shell.output[k]);
-			ft_check_redir(g_shell.tmp, fd, 0);
+			ft_check_redir(g_shell.tmp, g_shell.fd, 0);
 			g_shell.output[i] = g_shell.c;
 		}
 		if (!ft_isalnum(g_shell.output[i]) && g_shell.output[i] != '_' && g_shell.output[i] != '=' && g_shell.output[i] != ' ' && g_shell.output[i] != '\0')
@@ -356,17 +356,23 @@ int			ft_export(char *buf)
 	if (!buf[i] || (buf[i] == '\n' && !buf[i + 1]) || buf[i] == ';' || buf[i] == '>')
 	{
 		k = -1;
-		fd = ft_check_redir(ft_strdup(&buf[i]), fd, 1);
+		g_shell.fd = ft_check_redir(ft_strdup(&buf[i]), g_shell.fd, 1);
 		while (g_shell.sort_env[++k])
 		{
-			write(fd, g_shell.sort_env[k], ft_strlen(g_shell.sort_env[k]));
-			write(fd, "\n", 1);
+			i = 0;
+			while (i < g_shell.nb_fd || (g_shell.nb_fd == 0 && i == 0))
+			{
+				write(g_shell.fd[i], g_shell.sort_env[k], ft_strlen(g_shell.sort_env[k]));
+				write(g_shell.fd[i++], "\n", 1);
+			}
 		}
-		if (save != -1)
+		g_shell.fd = ft_close_fd(g_shell.fd);
+		if (g_shell.save != -1)
 		{
-			buf[save] = ';';
-			tmp = ft_strdup(&buf[save + 1]);
-			return (ft_get_cmd(tmp));
+			tmp = ft_strdup(&g_shell.save_buf[g_shell.save + 1]);
+			free(g_shell.save_buf);
+			g_shell.save_buf = NULL;
+			return (ft_check_parse(tmp));
 		}
 		return (1);
 	}
@@ -386,11 +392,16 @@ int			ft_export(char *buf)
 		return (2);
 	}
 	k = ft_get_var(k);
-	if (save != -1)
+	if (g_shell.save != -1)
 	{
-		buf[save] = ';';
-		tmp = ft_strdup(&buf[save + 1]);
-		return (ft_get_cmd(tmp));
+		i = 0;
+		while (buf[i])
+			i++;
+		buf[i] = ';';
+		tmp = ft_strdup(&g_shell.save_buf[g_shell.save + 1]);
+		free(g_shell.save_buf);
+		g_shell.save_buf = NULL;
+		return (ft_check_parse(tmp));
 	}
 	return (k);
 }
