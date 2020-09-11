@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:18 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/08/31 18:14:09 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/11 16:38:14 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ void		ft_error_cd(struct stat info, char *buf)
 	g_shell.ret = 1;
 }
 
-int		ft_cd_home(char *buf)
+int			ft_cd_home(char *buf)
 {
 	char	*dir;
 	int		i;
@@ -79,17 +79,15 @@ int			ft_cd(char *buf)
 	struct stat	info;
 	int			i;
 	int			k;
-	int			fd;
 	int			redir;
 	char		*tmp;
 
 	i = 0;
 	redir = 0;
-	fd = 1;
 	k = -1;
 	if (buf[i] != '\0' && buf[i] != ' ' && buf[i] != '>')
 		return (ft_pwd_error(buf, 1));
-	while (buf[i]!= '\0' && buf[i] == ' ' && buf[i] != '>')
+	while (buf[i] != '\0' && buf[i] == ' ' && buf[i] != '>')
 		i++;
 	if (!buf[i] || buf[i] == '>')
 		return (ft_cd_home(&buf[i]));
@@ -113,7 +111,7 @@ int			ft_cd(char *buf)
 			if (buf[i])
 				redir = -1;
 			buf[k] = '\0';
-			break;
+			break ;
 		}
 	g_shell.output = ft_strtrim(buf, " ");
 	if (stat(g_shell.output, &info) == -1 || S_ISREG(info.st_mode))
@@ -124,8 +122,6 @@ int			ft_cd(char *buf)
 		chdir(g_shell.output);
 	if (g_shell.save != -1)
 	{
-//		k != -1 ? buf[k] = '>' : 0 ;
-//		buf[save] = ';';
 		tmp = ft_strdup(&g_shell.save_buf[g_shell.save + 1]);
 		free(g_shell.output);
 		g_shell.output = NULL;

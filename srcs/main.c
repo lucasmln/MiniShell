@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/03 15:09:45 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/11 16:41:24 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,18 @@
 
 void		ft_get_signal(int code)
 {
+	char		**argv;
+
+	ft_printf(1, "exit: signal code %d\n", code);
 	if (code == SIGINT)
 	{
-		ft_printf(1, "\n");
-		ft_print_prompt();
-		exit(code);
-	}//Pas d'exit, relancer une affiche de prompt
-	if (code == SIGQUIT)
-	ft_printf(1, "exit: signal code %d\n", code);
-	if (code == 0x0c)
-		ft_check_parse(ft_strdup("clear"));
+		if (!(argv = malloc(sizeof(char **))))
+			exit(-1);
+		if (!(argv[0] = ft_strdup("MiniShell")))
+			exit(-1);
+		signal(SIGINT, SIG_DFL);
+		exit(execve("MiniShell", argv, g_shell.sort_env));
+	}
 }
 
 char		*ft_dollars(char *buf)
@@ -200,9 +202,6 @@ char		*ft_del_redir(char *buf)
 char		**ft_check_input(char **argv)
 {
 	int		i;
-//	int		fd;
-//	char	buf[BUF_SIZE + 1];
-//	int		ret;
 	char	*tmp;
 
 	i = 0;
@@ -286,8 +285,12 @@ int			ft_exe(char *buf)
 			cmd_path[i + k] = cmd[k];
 		cmd_path[i + k] = '\0';
 		if (g_shell.pip != -1)
+		{
 			if (pipe(g_shell.pipe_fd) == -1)
 				exit(ft_printf(1, "minishell: pipe: error call function\n"));
+			if (!g_shell.save_pipfd[0])
+				g_shell.save_pipfd[0] = dup(g_shell.pipe_fd[0]);
+		}
 		if (!stat(cmd_path, &info))
 		{
 			i = 0;
@@ -325,6 +328,8 @@ int			ft_exe(char *buf)
 				{
 					close(g_shell.pipe_fd[0]);
 					dup2(g_shell.pipe_fd[1], STDOUT_FILENO);
+					if (g_shell.save_pipfd[0])
+						dup2(g_shell.save_pipfd[0], STDIN_FILENO);
 					if (binary && !stat(binary, &info))
 						exit((execve(binary, argv, g_shell.env)));
 					else
@@ -378,15 +383,15 @@ int			ft_get_cmd(char *buf)
 		i++;
 	if (!ft_strncmp(&buf[i], "cd", ft_strlen("cd")))
 		g_shell.ret = ft_cd(&buf[i + 2]);
-	else if (!ft_strncmp(&buf[i], "pwd", ft_strlen("pwd")))
-		g_shell.ret = ft_pwd(&buf[i + ft_strlen("pwd")]);
+//	else if (!ft_strncmp(&buf[i], "pwd", ft_strlen("pwd")))
+//		g_shell.ret = ft_exe(&buf[i]);//ft_pwd(&buf[i + ft_strlen("pwd")]);
 	else if (!ft_strncmp(&buf[i], "export ", ft_strlen("export")))
 		g_shell.ret = ft_export(&buf[i + ft_strlen("export")]);
-	else if (!ft_strncmp(&buf[i], "env", ft_strlen("env")))
-		g_shell.ret = ft_env(&buf[i + ft_strlen("env")], g_shell.env);
-	else if (!ft_strncmp(&buf[i], "echo", ft_strlen("echo")))
-		g_shell.ret = ft_echo(&buf[i + ft_strlen("echo")]);
-	else if (!(ft_strncmp(&buf[i], "unset", ft_strlen("unset"))))
+/*	else if (!ft_strncmp(&buf[i], "env", ft_strlen("env")))
+**		g_shell.ret = ft_exe(&buf[i]);//  ft_env(&buf[i + ft_strlen("env")], g_shell.env);
+**	else if (!ft_strncmp(&buf[i], "echo", ft_strlen("echo")))
+**		g_shell.ret = ft_exe(&buf[i]);//  ft_echo(&buf[i + ft_strlen("echo")]);
+*/	else if (!(ft_strncmp(&buf[i], "unset", ft_strlen("unset"))))
 		g_shell.ret = ft_unset(&buf[i + ft_strlen("unset")]);
 	else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
 		exit(g_shell.ret);
@@ -397,41 +402,55 @@ int			ft_get_cmd(char *buf)
 	return ((g_shell.ret));
 }
 
-int			ft_check_parse(char *buf)
+char		*ft_set_check_parse(char *buf)
 {
-	int		i;
-
 	g_shell.save = -1;
 	g_shell.pip = -1;
 	g_shell.fd = ft_init_fd_tab(g_shell.fd, 512);
 	buf = ft_check_quote(buf);
 	if (buf[ft_strlen(buf) - 1] == '\n')
 		buf[ft_strlen(buf) - 1] = '\0';
-	i = -1;
 	g_shell.i_quote = 0;
 	g_shell.save_buf = ft_strdup(buf);
+	return (buf);
+}
+
+void		ft_cond_parse(char *buf, int i)
+{
+	if (buf[i] == g_shell.quote[0] &&
+								g_shell.quote_pos[g_shell.i_quote + 1] != -1)
+		g_shell.i_quote += 2;
+	if (buf[i] == ';' && i > g_shell.quote_pos[g_shell.i_quote] &&
+									i < g_shell.quote_pos[g_shell.i_quote + 1])
+		g_shell.save = i;
+	else if (g_shell.quote_pos[g_shell.i_quote + 1] == -1 &&
+						i > g_shell.quote_pos[g_shell.i_quote] && buf[i] == ';')
+		g_shell.save = i;
+	else if (g_shell.quote_pos[g_shell.i_quote + 1] == -1 &&
+						i > g_shell.quote_pos[g_shell.i_quote] && buf[i] == '|')
+		g_shell.pip = i;
+	if (buf[i] == '|' && i > g_shell.quote_pos[g_shell.i_quote] &&
+									i < g_shell.quote_pos[g_shell.i_quote + 1])
+		g_shell.pip = '|';
+}
+
+int			ft_check_parse(char *buf)
+{
+	int		i;
+
+	i = -1;
+	buf = ft_set_check_parse(buf);
 	while (buf[++i] && g_shell.save == -1 && g_shell.pip == -1)
 	{
 		if (g_shell.quote[0])
-		{
-			if (buf[i] == g_shell.quote[0] && g_shell.quote_pos[g_shell.i_quote + 1] != -1)
-				g_shell.i_quote += 2;
-			if (buf[i] == ';' && i > g_shell.quote_pos[g_shell.i_quote] &&
-			i < g_shell.quote_pos[g_shell.i_quote + 1])
-				g_shell.save = i;
-			else if (g_shell.quote_pos[g_shell.i_quote + 1] == -1 && i > g_shell.quote_pos[g_shell.i_quote] && buf[i] == ';')
-				g_shell.save = i;
-			else if (g_shell.quote_pos[g_shell.i_quote + 1] == -1 && i > g_shell.quote_pos[g_shell.i_quote] && buf[i] == '|')
-				g_shell.pip = i;
-			if (buf[i] == '|' && i > g_shell.quote_pos[g_shell.i_quote] &&
-			i < g_shell.quote_pos[g_shell.i_quote + 1])
-				g_shell.pip = '|';
-		}
+			ft_cond_parse(buf, i);
 		else
+		{
 			if (buf[i] == ';')
 				g_shell.save = i;
 			else if (buf[i] == '|')
 				g_shell.pip = i;
+		}
 	}
 	g_shell.save != -1 ? buf[g_shell.save] = '\0' : 0;
 	g_shell.pip != -1 ? buf[g_shell.pip] = '\0' : 0;
@@ -441,7 +460,7 @@ int			ft_check_parse(char *buf)
 	return (ft_get_cmd(buf));
 }
 
-int			ft_print_prompt()
+int			ft_print_prompt(void)
 {
 	int		i;
 	int		ret;
@@ -451,10 +470,13 @@ int			ft_print_prompt()
 	i = ft_strlen(g_shell.dir);
 	while (i >= 0 && g_shell.dir[i] != '/')
 		i--;
-	ft_printf(1, "" BOLDGREEN "➜ " RESET BOLDCYAN " %s " RESET, &g_shell.dir[i + 1]);
+	ft_printf(1, "" BOLDGREEN "➜ " RESET BOLDCYAN " %s " RESET,
+														&g_shell.dir[i + 1]);
 	ret = read(0, g_shell.buf, BUF_SIZE);
 	g_shell.buf[ret] = '\0';
+	i = 0;
 	buf = ft_strdup(g_shell.buf);
+	g_shell.save_pipfd[0] = 0;
 	return (ft_check_parse(buf));
 }
 
@@ -469,7 +491,7 @@ int			*ft_init_fd_tab(int *tab, int len)
 	return (tab);
 }
 
-int			*ft_close_fd(int	*fd)
+int			*ft_close_fd(int *fd)
 {
 	int		i;
 
@@ -494,11 +516,9 @@ int			main(int ac, char **av, const char **env)
 	if (!(g_shell.fd = malloc(sizeof(int) * 512)))
 		return (-1);
 	g_shell.fd = ft_init_fd_tab(g_shell.fd, 512);
-	int i = -1;
-	while (g_shell.fd[++i] != -2 && i < 512)
-		ft_printf(1, "fd[%d] = %d\n", i, g_shell.fd[i]);
-//	ft_exe(ft_strdup("bash"));
-//	return (0);
+	signal(SIGTERM, ft_get_signal);
+	signal(SIGINT, ft_get_signal);
+	signal(SIGQUIT, ft_get_signal);
 	while (1)
 		ft_print_prompt();
 }
