@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/11 16:41:24 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/14 21:03:43 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,16 @@
 
 void		ft_get_signal(int code)
 {
-	char		**argv;
+	int			i;
 
-	ft_printf(1, "exit: signal code %d\n", code);
 	if (code == SIGINT)
 	{
-		if (!(argv = malloc(sizeof(char **))))
-			exit(-1);
-		if (!(argv[0] = ft_strdup("MiniShell")))
-			exit(-1);
-		signal(SIGINT, SIG_DFL);
-		exit(execve("MiniShell", argv, g_shell.sort_env));
+		g_shell.dir = getcwd(g_shell.dir, BUF_SIZE);
+		i = ft_strlen(g_shell.dir);
+		while (i >= 0 && g_shell.dir[i] != '/')
+			i--;
+		ft_printf(1, "\n" BOLDGREEN "➜ " RESET BOLDCYAN " %s " RESET,
+														&g_shell.dir[i + 1]);
 	}
 }
 
@@ -79,8 +78,8 @@ char		*ft_dollars(char *buf)
 	}
 	g_shell.tmp = NULL;
 	free(buf);
-	buf = new;
-	return (buf);
+	buf = NULL;
+	return (new);
 }
 
 int			ft_copy_env(const char **env)
@@ -202,23 +201,22 @@ char		*ft_del_redir(char *buf)
 char		**ft_check_input(char **argv)
 {
 	int		i;
+	int		fd;
 	char	*tmp;
 
 	i = 0;
+	tmp = NULL;
 	while (argv[i])
 	{
 		if (argv[i][0] == '<')
 		{
 			if (ft_strlen(argv[i]) == 1)
 			{
-				tmp = argv[i];
+				if ((fd = open(argv[i + 1], O_RDONLY)) < 0)
+					return (NULL);
+				free(argv[i]);
 				argv[i] = argv[i + 1];
-				argv[i + 1] = tmp;
-				if (!argv[i])
-				{
-					free(argv[i]);
-					argv[i] = NULL;
-				}
+				argv[i + 1] = NULL;
 				i--;
 			}
 		}
@@ -252,10 +250,10 @@ int			ft_exe(char *buf)
 	g_shell.fd = ft_check_redir(ft_strdup(buf), g_shell.fd, 1);
 	if (g_shell.fd[0] != -2)
 		buf = ft_del_redir(ft_strdup(buf));
-	g_shell.fd[0] = g_shell.fd[0]== -2 ? 1 : g_shell.fd[0];
-	while (ft_strncmp(g_shell.sort_env[pos], "PATH=", 5))
+	g_shell.fd[0] = g_shell.fd[0] == -2 ? 1 : g_shell.fd[0];
+	while (g_shell.sort_env[pos] && ft_strncmp(g_shell.sort_env[pos], "PATH=", 5))
 		pos++;
-	path = ft_strdup(&g_shell.sort_env[pos][5]);
+	path = !g_shell.sort_env[pos] ? NULL : ft_strdup(&g_shell.sort_env[pos][5]);
 	save_path = path;
 	while (buf[i] && buf[i] != ' ')
 		i++;
@@ -272,18 +270,26 @@ int			ft_exe(char *buf)
 	argv = ft_split(buf, ' ');
 	argv = ft_check_input(argv);
 	i = -1;
-	while ((try_path = ft_get_path(path)) != NULL)
+	while (1/*(try_path = ft_get_path(path)) != NULL*/)
 	{
-		if (!(cmd_path = malloc(sizeof(char) * (ft_strlen(cmd) + ft_strlen(try_path) + 2))))
-			return (-1);
-		i = -1;
-		while (try_path[++i])
-			cmd_path[i] = try_path[i];
-		cmd_path[i++] = '/';
-		k = -1;
-		while (cmd[++k])
-			cmd_path[i + k] = cmd[k];
-		cmd_path[i + k] = '\0';
+		try_path = ft_get_path(path);
+		if (cmd[0] == '/' || !try_path)
+		{
+			cmd_path = ft_strdup(cmd);
+		}
+		else
+		{
+			if (!(cmd_path = malloc(sizeof(char) * (ft_strlen(cmd) + ft_strlen(try_path) + 2))))
+				return (-1);
+			i = -1;
+			while (try_path[++i])
+				cmd_path[i] = try_path[i];
+			cmd_path[i++] = '/';
+			k = -1;
+			while (cmd[++k])
+				cmd_path[i + k] = cmd[k];
+			cmd_path[i + k] = '\0';
+		}
 		if (g_shell.pip != -1)
 		{
 			if (pipe(g_shell.pipe_fd) == -1)
@@ -347,10 +353,12 @@ int			ft_exe(char *buf)
 				}
 			}
 		}
-		free(try_path);
-		try_path = NULL;
 		free(cmd_path);
 		cmd_path = NULL;
+		if (!try_path)
+			break ;
+		free(try_path);
+		try_path = NULL;
 		if (save == -1)
 			break ;
 		i = 0;
@@ -368,8 +376,12 @@ int			ft_exe(char *buf)
 									ft_strdup(&g_shell.save_buf[g_shell.pip + 1]);;
 		free(g_shell.save_buf);
 		g_shell.save_buf = NULL;
+		free(buf);
+		buf = NULL;
 		return (ft_check_parse(tmp));
 	}
+	free(buf);
+	buf = NULL;
 	return (1);
 }
 
@@ -439,6 +451,11 @@ int			ft_check_parse(char *buf)
 	int		i;
 
 	i = -1;
+	if (g_shell.save_buf)
+	{
+		free(g_shell.save_buf);
+		g_shell.save_buf = NULL;
+	}
 	buf = ft_set_check_parse(buf);
 	while (buf[++i] && g_shell.save == -1 && g_shell.pip == -1)
 	{
@@ -465,17 +482,22 @@ int			ft_print_prompt(void)
 	int		i;
 	int		ret;
 	char	*buf;
+	char	*tmp;
 
 	g_shell.dir = getcwd(g_shell.dir, BUF_SIZE);
 	i = ft_strlen(g_shell.dir);
+	tmp = NULL;
+	buf = NULL;
 	while (i >= 0 && g_shell.dir[i] != '/')
 		i--;
 	ft_printf(1, "" BOLDGREEN "➜ " RESET BOLDCYAN " %s " RESET,
 														&g_shell.dir[i + 1]);
 	ret = read(0, g_shell.buf, BUF_SIZE);
+	if (g_shell.buf[ret - 1] == 0)
+		exit(0);
 	g_shell.buf[ret] = '\0';
+	buf = ft_str_add(buf, g_shell.buf);
 	i = 0;
-	buf = ft_strdup(g_shell.buf);
 	g_shell.save_pipfd[0] = 0;
 	return (ft_check_parse(buf));
 }
@@ -520,5 +542,9 @@ int			main(int ac, char **av, const char **env)
 	signal(SIGINT, ft_get_signal);
 	signal(SIGQUIT, ft_get_signal);
 	while (1)
+	{
 		ft_print_prompt();
+		free(g_shell.save_buf);
+		g_shell.save_buf = NULL;
+	}
 }

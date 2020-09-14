@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:25 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/03 15:03:54 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/14 19:52:01 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ char	*ft_check_quote(char *buf)
 			k = 0;
 			while (g_shell.buf[k])
 			{
-				if (buf[k] == g_shell.quote[0])
+				if (g_shell.buf[k] == g_shell.quote[0])
 					g_shell.quote_pos[g_shell.i_quote++] = i + k;
 				s_quote = g_shell.buf[k] == S_QUOTE && S_QUOTE == g_shell.quote[0] ? s_quote + 1: s_quote;
 				d_quote = g_shell.buf[k] == '"' && '"' == g_shell.quote[0] ? d_quote + 1: d_quote;
@@ -199,8 +199,6 @@ int		*ft_check_redir(char *buf, int *fd, int cmd)
 				buf[i] = '\0';
 				if ((fd[g_shell.nb_fd++] = open(&buf[start[1]], O_TRUNC | O_CREAT | O_RDWR, S_IRUSR | S_IROTH | S_IRGRP | S_IWUSR, 0640)) == -1)
 					break;
-				//if (cmd)
-				//	break;
 				buf[i] = save;
 			}
 			else if (buf[i] == '>' && buf[i + 1] == '>')

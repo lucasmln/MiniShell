@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:18 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/11 16:38:14 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/14 21:06:43 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,55 +21,46 @@ void		ft_error_cd(struct stat info, char *buf)
 	g_shell.ret = 1;
 }
 
+void		ft_pass_redir_cd(char *buf, int *i, int *fd)
+{
+	while (buf[++*i] == ' ')
+		;
+	while (buf[*i] && buf[*i] != ' ')
+		*i += 1;
+	g_shell.c = buf[*i];
+	buf[*i] = '\0';
+	g_shell.tmp = ft_strdup(buf);
+	buf[*i] = g_shell.c;
+	ft_check_redir(g_shell.tmp, fd, 0);
+	while (buf[*i] && buf[*i] == ' ')
+		*i += 1;
+}
+
 int			ft_cd_home(char *buf)
 {
-	char	*dir;
 	int		i;
-	int		count;
 	int		fd;
-	char	*tmp;
 
 	fd = 1;
-	i = 0;
-	if (buf[i] == '>')
-	{
-		count = i;
-		while (buf[++i] == ' ')
-			;
-		while (buf[i] && buf[i] != ' ')
-			i++;
-		g_shell.c = buf[i];
-		buf[i] = '\0';
-		g_shell.tmp = ft_strdup(buf);
-		buf[i] = g_shell.c;
-		ft_check_redir(g_shell.tmp, &fd, 0);
-		while (buf[i] && buf[i] == ' ')
-			i++;
-	}
+	if (buf[(i = 0)] == '>')
+		ft_pass_redir_cd(buf, &i, &fd);
 	if (buf[i] && buf[i] != ' ')
 		ft_printf(1, "cd: error string after redirection\n");
 	else
 	{
-		if (!(dir = malloc(sizeof(char) * BUF_SIZE + 1)))
-			return (0);
-		dir = getcwd(dir, BUF_SIZE);
 		i = 0;
-		count = 0;
-		while (dir[i++])
-			if (dir[i] == '/')
-				count++;
-		while (count-- >= 2)
-			chdir("..");
-		free(dir);
-		dir = NULL;
-		i = 0;
+		while (ft_strncmp(g_shell.env[i], "HOME", 4))
+			i++;
+		if (!g_shell.env[i])
+			ft_printf(1, "minishell: no HOME path\n");
+		else
+			chdir(&g_shell.env[i][5]);
 	}
 	if (g_shell.save != -1)
 	{
-		tmp = ft_strdup(&g_shell.save_buf[g_shell.save + 1]);
 		free(g_shell.output);
 		g_shell.output = NULL;
-		return (ft_check_parse(tmp));
+		return (ft_check_parse(ft_strdup(&g_shell.save_buf[g_shell.save + 1])));
 	}
 	return (1);
 }
