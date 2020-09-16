@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/14 21:03:43 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/16 01:57:34 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -225,6 +225,17 @@ char		**ft_check_input(char **argv)
 	return (argv);
 }
 
+void		ft_create_pipe(void)
+{
+	if (g_shell.pip != -1)
+	{
+		if (pipe(g_shell.pipe_fd) == -1)
+			exit(ft_printf(1, "minishell: pipe: error call function\n"));
+		if (!g_shell.save_pipfd[0])
+			g_shell.save_pipfd[0] = dup(g_shell.pipe_fd[0]);
+	}
+}
+
 int			ft_exe(char *buf)
 {
 	int				pos;
@@ -238,14 +249,13 @@ int			ft_exe(char *buf)
 	char			*binary;
 	char			*try_path;
 	char			*cmd_path;
-	char			*tmp;
+//	char			*tmp;
 	char			**argv;
 	struct stat		info;
 	pid_t			pid;
 
 	pos = 0;
 	binary = NULL;
-	i = 0;
 	i = 0;
 	g_shell.fd = ft_check_redir(ft_strdup(buf), g_shell.fd, 1);
 	if (g_shell.fd[0] != -2)
@@ -270,13 +280,11 @@ int			ft_exe(char *buf)
 	argv = ft_split(buf, ' ');
 	argv = ft_check_input(argv);
 	i = -1;
-	while (1/*(try_path = ft_get_path(path)) != NULL*/)
+	while (1)
 	{
 		try_path = ft_get_path(path);
 		if (cmd[0] == '/' || !try_path)
-		{
 			cmd_path = ft_strdup(cmd);
-		}
 		else
 		{
 			if (!(cmd_path = malloc(sizeof(char) * (ft_strlen(cmd) + ft_strlen(try_path) + 2))))
@@ -290,13 +298,7 @@ int			ft_exe(char *buf)
 				cmd_path[i + k] = cmd[k];
 			cmd_path[i + k] = '\0';
 		}
-		if (g_shell.pip != -1)
-		{
-			if (pipe(g_shell.pipe_fd) == -1)
-				exit(ft_printf(1, "minishell: pipe: error call function\n"));
-			if (!g_shell.save_pipfd[0])
-				g_shell.save_pipfd[0] = dup(g_shell.pipe_fd[0]);
-		}
+		ft_create_pipe();
 		if (!stat(cmd_path, &info))
 		{
 			i = 0;
@@ -370,19 +372,22 @@ int			ft_exe(char *buf)
 	g_shell.ret = save == -1 ? status / 256 : 0;
 	if (save != -1)
 		ft_printf(1, "minishell: command not found: %s\n", buf);
-	if (g_shell.save != -1 || g_shell.pip != -1)
-	{
-		tmp = g_shell.save != -1 ? ft_strdup(&g_shell.save_buf[g_shell.save + 1]):
-									ft_strdup(&g_shell.save_buf[g_shell.pip + 1]);;
-		free(g_shell.save_buf);
-		g_shell.save_buf = NULL;
-		free(buf);
-		buf = NULL;
-		return (ft_check_parse(tmp));
-	}
 	free(buf);
 	buf = NULL;
+	if (g_shell.save != -1 || g_shell.pip != -1)
+		return (ft_ispipe_is_ptvirgule());
 	return (1);
+}
+
+int			ft_ispipe_is_ptvirgule()
+{
+	char	*tmp;
+
+	tmp = g_shell.save != -1 ? ft_strdup(&g_shell.save_buf[g_shell.save + 1]):
+								ft_strdup(&g_shell.save_buf[g_shell.pip + 1]);;
+	free(g_shell.save_buf);
+	g_shell.save_buf = NULL;
+	return (ft_check_parse(tmp));
 }
 
 int			ft_get_cmd(char *buf)
@@ -497,7 +502,6 @@ int			ft_print_prompt(void)
 		exit(0);
 	g_shell.buf[ret] = '\0';
 	buf = ft_str_add(buf, g_shell.buf);
-	i = 0;
 	g_shell.save_pipfd[0] = 0;
 	return (ft_check_parse(buf));
 }
@@ -538,9 +542,7 @@ int			main(int ac, char **av, const char **env)
 	if (!(g_shell.fd = malloc(sizeof(int) * 512)))
 		return (-1);
 	g_shell.fd = ft_init_fd_tab(g_shell.fd, 512);
-	signal(SIGTERM, ft_get_signal);
 	signal(SIGINT, ft_get_signal);
-	signal(SIGQUIT, ft_get_signal);
 	while (1)
 	{
 		ft_print_prompt();

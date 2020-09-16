@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/25 18:18:46 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/08/31 16:32:39 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/15 13:04:30 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,6 @@ int			ft_unset(char *buf)
 	int		fd;
 	char	*tmp;
 
-	i = -1;
 	save = -1;
 	error = 0;
 	fd = 0;
@@ -94,13 +93,16 @@ int			ft_unset(char *buf)
 			ft_error_unset(2, g_shell.output);
 			g_shell.output[i + 1] = error;
 		}
-		else if (error != 0 && g_shell.output[i] != ' ' && g_shell.output[i] != '\0')
+		else if (error != 0 && g_shell.output[i] != ' ' &&
+													g_shell.output[i] != '\0')
 			while (g_shell.output[i] && g_shell.output[i] != ' ')
 				i++;
-		else if ((k = ft_find_var(g_shell.sort_env, g_shell.output, ' ')) != g_shell.len_exp)
+		else if ((k = ft_find_var(g_shell.sort_env, g_shell.output, ' ')) !=
+																g_shell.len_exp)
 		{
 			ft_unset_var(g_shell.sort_env, k, g_shell.len_exp--);
-			if ((k = ft_find_var(g_shell.env, g_shell.output, ' ')) != g_shell.len_env)
+			if ((k = ft_find_var(g_shell.env, g_shell.output, ' ')) !=
+																g_shell.len_env)
 				ft_unset_var(g_shell.env, k, g_shell.len_env--);
 		}
 		else if (k == g_shell.len_exp)

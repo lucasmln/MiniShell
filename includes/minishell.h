@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/02 13:39:25 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/16 03:13:18 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ int				*ft_check_redir(char *buf, int fd[], int cmd);
 
 int				ft_env(char *buf, char **env);
 int				ft_get_var(int i);
-void			ft_error_export(char *buf);
+int				ft_error_export(char *buf);
 void			ft_sort_env(char **env);
 char			**ft_add_var(char **env, char *buf, int len_env, int i);
 void			ft_del_var(char **env, int len);
@@ -103,6 +103,8 @@ int				ft_get_cmd(char *buf);
 int				*ft_init_fd_tab(int *tab, int len);
 char			*ft_del_redir(char *buf);
 int				*ft_close_fd(int *fd);
+int				ft_ispipe_is_ptvirgule();
+void			ft_create_pipe(void);
 
 /*
  ** pwd.c
