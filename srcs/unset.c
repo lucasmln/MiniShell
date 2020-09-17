@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/25 18:18:46 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/15 13:04:30 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/17 11:11:38 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,18 +39,31 @@ void		ft_unset_var(char **env, int k, int len)
 	env[k] = NULL;
 }
 
+int			ft_check_error(char *buf, int *i, int *error)
+{
+	*error = 0;
+	*i = 0;
+	while (buf[*i] && buf[*i] == ' ')
+		i += 1;
+	if (*i == 0 && buf[*i])
+		*error = ft_error_unset(0, buf);
+	else if (!buf[*i])
+		*error = ft_error_unset(1, buf);
+	if (*error && g_shell.save == -1)
+		return (2);
+	*error = 0;
+	g_shell.output = ft_strdup(&buf[*i]);
+	*i = 0;
+	return (0);
+}
+
 int			ft_unset(char *buf)
 {
 	int		i;
 	int		k;
-	int		save;
 	int		error;
-	int		fd;
-	char	*tmp;
 
-	save = -1;
 	error = 0;
-	fd = 0;
 	i = 0;
 	while (buf[i] && buf[i] == ' ')
 		i++;
@@ -63,6 +76,8 @@ int			ft_unset(char *buf)
 	error = 0;
 	g_shell.output = ft_strdup(&buf[i]);
 	i = 0;
+//	if (ft_check_error(buf, &i, &error))
+//		return (2);
 	while (g_shell.output[i])
 	{
 		while (g_shell.output[i] && g_shell.output[i] == ' ')
@@ -110,16 +125,12 @@ int			ft_unset(char *buf)
 		g_shell.tmp = ft_strdup(&g_shell.output[i]);
 		free(g_shell.output);
 		g_shell.output = g_shell.tmp;
-		i = 0;
-		if (!g_shell.output[i])
+		if (!g_shell.output[(i = 0)])
 			break ;
 	}
 	free(g_shell.output);
 	g_shell.output = NULL;
-	if (g_shell.save != -1)
-	{
-		tmp = ft_strdup(&g_shell.save_buf[g_shell.save + 1]);
-		return (ft_check_parse(tmp));
-	}
+	if (g_shell.save != -1 || g_shell.pip != -1)
+		return (ft_ispipe_is_ptvirgule());
 	return (1);
 }

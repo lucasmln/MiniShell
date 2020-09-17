@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/16 03:13:18 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/17 10:55:28 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ typedef struct		s_minishell
 	int		save_pipfd[2];
 	int		pip;
 	int		i;
+	int		ret_export;
 	char	c;
 	int		ret;
 }					t_minishell;
@@ -80,12 +81,16 @@ int				*ft_check_redir(char *buf, int fd[], int cmd);
 int				ft_env(char *buf, char **env);
 int				ft_get_var(int i);
 int				ft_error_export(char *buf);
-void			ft_sort_env(char **env);
+int				ft_sort_env(char **env);
 char			**ft_add_var(char **env, char *buf, int len_env, int i);
 void			ft_del_var(char **env, int len);
 int				ft_find_var(char **env, char *var, char c);
 int				ft_change_var(char **env, int len);
 int				ft_export(char *buf);
+int				ft_get_var_2(int *i);
+int				ft_get_var_3(int *i);
+int				ft_get_var_4(int *i);
+int				ft_get_var_5(int *i);
 
 /*
  ** ls.c

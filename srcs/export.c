@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:15:40 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/16 04:57:17 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/17 10:55:42 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ int			ft_error_export(char *buf)
 	return (2);
 }
 
-void		ft_sort_env(char **env)
+int			ft_sort_env(char **env)
 {
 	int		i;
 	char	*tmp;
@@ -97,6 +97,7 @@ void		ft_sort_env(char **env)
 			i = i - 1 >= -1 ? -1 : i - 1;
 		}
 	}
+	return (1);
 }
 
 char		**ft_add_var(char **env, char *buf, int len_env, int i)
@@ -143,15 +144,21 @@ void		ft_del_var(char **env, int len)
 int			ft_find_var(char **env, char *var, char c)
 {
 	int		i;
-	int		cmp;
+	int		k;
 
 	i = 0;
-	cmp = 0;
 	while (env[i])
 	{
-		if (!ft_strncmp(env[i], var, ft_strlen(var) -
-												ft_strlen(ft_strchr(var, c))))
+		k = 0;
+		while (env[i][k] && env[i][k] != c)
+			k++;
+		env[i][k] = '\0';
+		if (!ft_strncmp(env[i], var, ft_strlen(env[i])))
+		{
+			env[i][k] = c;
 			return (i);
+		}
+		env[i][k] = c;
 		i++;
 	}
 	return (i);
@@ -174,6 +181,75 @@ int			ft_change_var(char **env, int len)
 		g_shell.len_exp--;
 	else if (g_shell.env == env)
 		g_shell.len_env--;
+	return (1);
+}
+
+int			ft_get_var_7(int *i)
+{
+	int		k;
+
+	if (!g_shell.output[*i + 1] || g_shell.output[*i + 1] == ' ')
+		ft_printf(1, "minishell: bad assignment\n");
+	else
+	{
+		k = *i + 1;
+		while (g_shell.output[k] && g_shell.output[k] != ' ')
+			k++;
+		g_shell.c = g_shell.output[k];
+		g_shell.output[k] = '\0';
+		ft_printf(1, "minishell: %s not found\n", &g_shell.output[*i + 1]);
+		g_shell.output[k] = g_shell.c;
+	}
+	return (0);
+}
+
+int			ft_get_var_6(int *i)
+{
+	int		k;
+
+	k = g_shell.output[*i];
+	g_shell.sort_env = ft_add_var(g_shell.sort_env, g_shell.output,
+												++g_shell.len_exp, *i);
+	g_shell.sort_env[g_shell.len_exp - 1] =
+		ft_str_add(g_shell.sort_env[g_shell.len_exp - 1], "=''");
+	if (ft_find_var(g_shell.sort_env,
+	g_shell.sort_env[g_shell.len_exp - 1], '=') != g_shell.len_exp - 1)
+		ft_del_var(g_shell.sort_env, (g_shell.len_exp -= 1));
+	if (!k)
+		return (0);
+	g_shell.tmp = ft_strdup(&g_shell.output[*i + 1]);
+	free(g_shell.output);
+	g_shell.output = g_shell.tmp;
+	*i = 0;
+	return (1);
+}
+
+int			ft_get_var_5(int *i)
+{
+	int		k;
+
+	if (g_shell.output[*i + 1 + (k = 0)] == '=')
+	{
+		while (g_shell.output[*i + k] && g_shell.output[*i + k] != ' ')
+			k++;
+		g_shell.output[*i + k] = '\0';
+		ft_printf(1, "minishell: %s not found\n", &g_shell.output[*i + 2]);
+		return (0);
+	}
+	if (g_shell.output[*i + 1] == ' ' || !g_shell.output[*i + 1])
+	{
+		if (!ft_get_var_3(i))
+			return (0);
+		while (g_shell.output[*i] && g_shell.output[*i] != ' ')
+			*i += 1;
+	}
+	else
+		ft_get_var_4(i);
+	if (!g_shell.output[*i] || !(g_shell.tmp = ft_strdup(&g_shell.output[*i])))
+		return (0);
+	free(g_shell.output);
+	g_shell.output = g_shell.tmp;
+	*i = 0;
 	return (1);
 }
 
@@ -231,7 +307,7 @@ int			ft_get_var_3(int *i)
 	return (1);
 }
 
-int			ft_get_var_2(int *i, int *k)
+int			ft_get_var_2(int *i)
 {
 	char	*tmp;
 
@@ -240,7 +316,7 @@ int			ft_get_var_2(int *i, int *k)
 	if (g_shell.output[*i] == '>')
 	{
 		*i += 1;
-		g_shell.tmp = ft_strdup(&g_shell.output[*k]);
+		g_shell.tmp = ft_strdup(&g_shell.output[*i]);
 		ft_check_redir(g_shell.tmp, g_shell.fd, 0);
 		tmp = ft_del_redir(ft_strdup(g_shell.output));
 		free(g_shell.output);
@@ -251,65 +327,16 @@ int			ft_get_var_2(int *i, int *k)
 
 int			ft_get_var(int i)
 {
-	int		k;
-	int		save_len[2];
-	int		fd;
-
-	save_len[0] = g_shell.len_exp;
-	save_len[1] = g_shell.len_env;
-	i = 0;
-	fd = 0;
 	while (1)
 	{
 		if (g_shell.output[i] == '>')
-			if (!ft_get_var_2(&i, &k))
-				break ;
+			ft_get_var_2(&i);
 		if (g_shell.output[i] == '=' && i == 0)
-			break ;
-		else if (g_shell.output[i] == '=' && i >= 0)
-		{
-			if (g_shell.output[i + 1] == '=')
-			{
-				k = 0;
-				while (g_shell.output[i + k] && g_shell.output[i + k] != ' ')
-					k++;
-				g_shell.output[i + k] = '\0';
-				ft_printf(1, "minishell: %s not found\n", &g_shell.output[i + 2]);
-				break ;
-			}
-			if (g_shell.output[i + 1] == ' ' || !g_shell.output[i + 1])
-			{
-				if (!ft_get_var_3(&i))
-					break ;
-				while (g_shell.output[i] && g_shell.output[i] != ' ')
-					i++;
-			}
-			else
-				ft_get_var_4(&i);
-			if (!g_shell.output[i])
-				break ;
-			g_shell.tmp = ft_strdup(&g_shell.output[i]);
-			free(g_shell.output);
-			g_shell.output = g_shell.tmp;
-			i = 0;
-		}
+			g_shell.ret_export = ft_get_var_7(&i);
+		else if (g_shell.output[i] == '=' && i > 0)
+			g_shell.ret_export = ft_get_var_5(&i);
 		else if (i > 0 && (!g_shell.output[i] || g_shell.output[i] == ' '))
-		{
-			k = g_shell.output[i];
-			g_shell.sort_env = ft_add_var(g_shell.sort_env, g_shell.output,
-														++g_shell.len_exp, i);
-			g_shell.sort_env[g_shell.len_exp - 1] =
-				ft_str_add(g_shell.sort_env[g_shell.len_exp - 1], "=''");
-			if (ft_find_var(g_shell.sort_env,
-			g_shell.sort_env[g_shell.len_exp - 1], '=') != g_shell.len_exp - 1)
-				ft_del_var(g_shell.sort_env, (g_shell.len_exp -= 1));
-			if (!k)
-				break ;
-			g_shell.tmp = ft_strdup(&g_shell.output[i + 1]);
-			free(g_shell.output);
-			g_shell.output = g_shell.tmp;
-			i = 0;
-		}
+			g_shell.ret_export = ft_get_var_6(&i);
 		else if (g_shell.output[i] == ' ')
 		{
 			while (g_shell.output[i] == ' ')
@@ -321,11 +348,10 @@ int			ft_get_var(int i)
 		}
 		else
 			i++;
-		if (!g_shell.output)
+		if (!g_shell.output || !g_shell.ret_export)
 			break ;
 	}
-	ft_sort_env(g_shell.sort_env);
-	return (1);
+	return (ft_sort_env(g_shell.sort_env));
 }
 
 int			ft_export_no_pipe(void)
@@ -413,7 +439,8 @@ int			ft_export(char *buf)
 	g_shell.output = ft_strdup(&buf[i]);
 	if (!ft_isalpha(g_shell.output[(i = 0)]) && g_shell.output[i] != '_')
 		return (ft_error_export(g_shell.output));
-	i = ft_get_var(i);
+	g_shell.ret_export = 1;
+	i = ft_get_var(0);
 	g_shell.output ? free(g_shell.output) : 0;
 	g_shell.output = NULL;
 	if (g_shell.save != -1 || g_shell.pip != -1)
