@@ -152,6 +152,7 @@ int			ft_find_var(char **env, char *var, char c)
 		k = 0;
 		while (env[i][k] && env[i][k] != c)
 			k++;
+		c = env[i][k];
 		env[i][k] = '\0';
 		if (!ft_strncmp(env[i], var, ft_strlen(env[i])))
 		{
