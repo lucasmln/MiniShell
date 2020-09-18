@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/17 10:55:28 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/18 16:14:44 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ typedef struct		s_minishell
 	int		len_env;
 	int		save;
 	int		*fd;
+	int		*input;
 	int		nb_fd;
 	int		pipe_fd[2];
 	int		save_pipfd[2];
