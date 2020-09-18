@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/16 01:57:34 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/18 16:47:59 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,39 @@ void		ft_get_signal(int code)
 	}
 }
 
+char		*ft_dollars_2(int *i, char *new, char *buf, int save)
+{
+	int		start;
+	int		pos;
+
+	start = *i += 1;
+	if (buf[*i] && (ft_isalnum(buf[*i]) || buf[*i] == '_'))
+	{
+		while (buf[*i] && (ft_isalnum(buf[*i]) || buf[*i] == '_'))
+			*i += 1;
+		save = buf[*i];
+		buf[*i] = '\0';
+		pos = ft_find_var(g_shell.sort_env, &buf[start], '=');
+		new = ft_str_add(new, ft_strchr(g_shell.sort_env[pos], '=') ?
+				ft_strchr(g_shell.sort_env[pos], '=') + 1 : "");
+		buf[*i] = save;
+	}
+	else if (buf[*i] == '?')
+	{
+		g_shell.tmp = ft_itoa(g_shell.ret);
+		new = ft_str_add(new, g_shell.tmp);
+		free(g_shell.tmp);
+		*i += 1;
+	}
+	else
+		new = ft_str_add(new, "$");
+	return (new);
+}
+
 char		*ft_dollars(char *buf)
 {
 	int		i;
-	int		start;
 	int		save;
-	int		pos;
 	char	*new;
 
 	i = 0;
@@ -42,39 +69,15 @@ char		*ft_dollars(char *buf)
 	while (buf[i])
 	{
 		if (buf[i] == '$')
-		{
-			i++;
-			start = i;
-			if (buf[i] && (ft_isalnum(buf[i]) || buf[i] == '_'))
-			{
-				while (buf[i] && (ft_isalnum(buf[i]) || buf[i] == '_'))
-					i++;
-				save = buf[i];
-				buf[i] = '\0';
-				pos = ft_find_var(g_shell.sort_env, &buf[start], '\0');
-				new = ft_str_add(new, ft_strchr(g_shell.sort_env[pos], '=') ? ft_strchr(g_shell.sort_env[pos], '=') + 1 : "");
-				buf[i] = save;
-				i--;
-			}
-			else if (buf[i] == '?')
-			{
-				new = ft_str_add(new, (g_shell.tmp = ft_itoa(g_shell.ret)));
-				free(g_shell.tmp);
-			}
-			else
-			{
-				new = ft_str_add(new, "$");
-				i--;
-			}
-		}
+			new = ft_dollars_2(&i, new, buf, save);
 		else
 		{
 			save = buf[i + 1];
 			buf[i + 1] = '\0';
 			new = ft_str_add(new, &buf[i]);
 			buf[i + 1] = save;
+			i++;
 		}
-		i++;
 	}
 	g_shell.tmp = NULL;
 	free(buf);
@@ -202,10 +205,12 @@ char		**ft_check_input(char **argv)
 {
 	int		i;
 	int		fd;
+	int		k;
 	char	*tmp;
 
 	i = 0;
 	tmp = NULL;
+	k = 0;
 	while (argv[i])
 	{
 		if (argv[i][0] == '<')
@@ -214,6 +219,7 @@ char		**ft_check_input(char **argv)
 			{
 				if ((fd = open(argv[i + 1], O_RDONLY)) < 0)
 					return (NULL);
+				k++;
 				free(argv[i]);
 				argv[i] = argv[i + 1];
 				argv[i + 1] = NULL;
@@ -242,6 +248,7 @@ int			ft_exe(char *buf)
 	int				save;
 	int				i;
 	int				k;
+	int				l;
 	int				status;
 	char			*path;
 	char			*save_path;
@@ -307,7 +314,10 @@ int			ft_exe(char *buf)
 				pid = fork();
 				if (pid == 0)
 				{
+					l = 0;
 					dup2(g_shell.fd[i], STDOUT_FILENO);
+			//		if (g_shell.input[0] > 0)
+			//			dup2(g_shell.input[0], STDIN_FILENO);
 					if (g_shell.save_pipfd[0])
 						dup2(g_shell.save_pipfd[0], STDIN_FILENO);
 					if (binary && !stat(binary, &info))
@@ -541,6 +551,9 @@ int			main(int ac, char **av, const char **env)
 		return (-1);
 	if (!(g_shell.fd = malloc(sizeof(int) * 512)))
 		return (-1);
+	if (!(g_shell.input = malloc(sizeof(int) * 512)))
+		return (-1);
+	g_shell.input = ft_init_fd_tab(g_shell.input, 512);
 	g_shell.fd = ft_init_fd_tab(g_shell.fd, 512);
 	signal(SIGINT, ft_get_signal);
 	while (1)
