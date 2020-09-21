@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:25 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/16 01:10:52 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/21 18:46:32 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,97 +125,6 @@ char	*ft_str_del_char(char *str, char c)
 		i++;
 	}
 	return (str);
-}
-
-int		ft_double_redir(char *buf, int fd, int i, int stop)
-{
-	int				k;
-	int				save[2];
-	int				start;
-	int				check;
-	char			file_buf[2048];
-
-	check = 0;
-	while (buf[++i] == ' ')
-		;
-	if (!buf[i])
-		return (ft_printf(1, "minishell: no redirecton after >>\n") - 30);
-	start = i;
-	while (buf[i] && buf[i] != ' ')
-		i++;
-	save[0] = buf[i];
-	buf[i] = '\0';
-	if ((fd = open(&buf[start], O_CREAT | O_RDWR , S_IRUSR | S_IROTH | S_IRGRP | S_IWUSR)) == -1)
-		return (-1);
-	while ((k = read(fd, file_buf, BUF_SIZE)))
-		;
-	k = -1;
-	while (++k <= stop && stop > 0 )
-		write(fd, &buf[k], 1);
-	if (!save[0])
-		return (write(fd, "\n", 1) ? fd : fd);
-	while (k < start)
-		k++;
-	buf[i] = save[0];
-	if (!stop)
-		while (buf[++i] == ' ')
-			;
-	write(fd, &buf[i], ft_strlen(&buf[i]));
-	write(fd, "\n", 1);
-	return (fd);
-}
-
-int		*ft_check_redir(char *buf, int *fd, int cmd)
-{
-	int				i;
-	int				save;
-	int				start[2];
-
-	i = -1;
-	start[0] = 0;
-	start[1] = 0;
-	cmd++;
-	g_shell.nb_fd = 0;
-	while (buf[++i])
-	{
-		while (buf[i])
-		{
-			if (buf[i] != '>' && buf[i] != ' ')
-				start[0] = i;
-			if (buf[i] == '>' && buf[i + 1] != '>')
-			{
-				while (buf[++i] == ' ')
-					;
-				start[1] = i;
-				if (!buf[i])
-				{
-					ft_printf(1, "minishell: parse error after >\n");
-					fd[g_shell.nb_fd++] = -1;
-					break;
-				}
-				while (buf[i] && buf[i] != ' ')
-					i++;
-				save = buf[i];
-				buf[i] = '\0';
-				if ((fd[g_shell.nb_fd++] = open(&buf[start[1]], O_TRUNC | O_CREAT | O_RDWR, S_IRUSR | S_IROTH | S_IRGRP | S_IWUSR, 0640)) == -1)
-					break;
-				buf[i] = save;
-			}
-			else if (buf[i] == '>' && buf[i + 1] == '>')
-			{
-				fd[g_shell.nb_fd] = ft_double_redir(buf, fd[g_shell.nb_fd], ++i, start[0]);
-				fd[g_shell.nb_fd] >= 0 ? g_shell.nb_fd++ : 0;
-				i++;
-			}
-			else
-				i++;
-		}
-		if (!buf[i])
-			break;
-	}
-	free(buf);
-	buf = NULL;
-	return (fd);
 }
 
 int		ft_echo(char *buf)

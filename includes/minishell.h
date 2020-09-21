@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/18 16:14:44 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/21 20:32:58 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,8 @@ typedef struct		s_minishell
 	int		len_env;
 	int		save;
 	int		*fd;
-	int		*input;
 	int		nb_fd;
+	int		nb_input;
 	int		pipe_fd[2];
 	int		save_pipfd[2];
 	int		pip;
@@ -54,6 +54,28 @@ typedef struct		s_minishell
 	char	c;
 	int		ret;
 }					t_minishell;
+
+typedef struct		s_exe
+{
+	pid_t			pid;
+	int				*in;
+	char			**argv;
+	struct	stat	info;
+	char			*cmd;
+	char			*path;
+	char			*save_path;
+	char			*binary;
+	char			save;
+	int				i;
+	int				k;
+	int				l;
+	int				status;
+	char			*try_path;
+	char			*cmd_path;
+	int				fd[2];
+	char			*buf;
+}					t_exe;
+
 
 t_minishell			g_shell;
 
@@ -73,7 +95,6 @@ char				*ft_str_add(char *s1, char const *s2);
 char				*ft_check_quote(char *buf);
 char				*ft_str_del_char(char *str, char c);
 int					ft_echo(char *buf);
-int					*ft_check_redir(char *buf, int fd[], int cmd);
 
 /*
  ** export.c
@@ -94,12 +115,6 @@ int					ft_get_var_4(int *i);
 int					ft_get_var_5(int *i);
 
 /*
- ** ls.c
-*/
-
-int					ft_ls(char *buf);
-
-/*
  ** main.c
 */
 
@@ -108,9 +123,17 @@ int					ft_print_prompt();
 int					ft_get_cmd(char *buf);
 int					*ft_init_fd_tab(int *tab, int len);
 char				*ft_del_redir(char *buf);
-int					*ft_close_fd(int *fd);
 int					ft_ispipe_is_ptvirgule();
 void				ft_create_pipe(void);
+
+/*
+ ** main_utils.c
+*/
+
+void				ft_copy_env_utils(const char **env, int i);
+int					ft_copy_env(const char **env);
+int					*ft_init_fd_tab(int *tab, int len);
+int					*ft_close_fd(int *fd);
 
 /*
  ** pwd.c
@@ -118,6 +141,16 @@ void				ft_create_pipe(void);
 
 int					ft_pwd_error(char *buf, int error);
 int					ft_pwd(char *buf);
+
+/*
+ ** redir.c
+*/
+
+char				*ft_del_redir(char *buf);
+char				**ft_open_input(char **argv, int *in, char **now);
+char				**ft_check_input(char **argv, int *in);
+int					ft_double_redir(char *buf, int fd, int i);
+int					*ft_check_redir(char *buf, int *fd, int cmd);
 
 /*
  ** unset.c

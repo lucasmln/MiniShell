@@ -6,7 +6,7 @@
 #    By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/07/28 11:50:25 by lmoulin           #+#    #+#              #
-#    Updated: 2020/09/14 20:37:20 by lmoulin          ###   ########.fr        #
+#    Updated: 2020/09/21 19:09:57 by lmoulin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,6 +28,7 @@ DIR_PRINTF =	./libft/ft_printf/
 
 
 SRC =		cd.c echo.c export.c main.c pwd.c unset.c \
+			main_utils.c redir.c
 
 
 SRCS =			$(addprefix $(DIR_SRCS), $(SRC))
