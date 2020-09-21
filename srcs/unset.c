@@ -79,7 +79,7 @@ int			ft_unset_3(int *i, int *error, char *tmp)
 			g_shell.len_exp)
 	{
 		ft_unset_var(g_shell.sort_env, k, g_shell.len_exp--);
-		if ((k = ft_find_var(g_shell.env, tmp, ' ')) !=
+		if ((k = ft_find_var(g_shell.env, tmp, '=')) !=
 				g_shell.len_env)
 			ft_unset_var(g_shell.env, k, g_shell.len_env--);
 	}

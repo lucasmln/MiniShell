@@ -13,17 +13,17 @@
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <dirent.h>
-#include "../libft/ft_printf/ft_printf.h"
-#include "color.h"
-#include "../libft/libft/libft.h"
+# include <unistd.h>
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <sys/wait.h>
+# include <signal.h>
+# include <fcntl.h>
+# include <stdio.h>
+# include <dirent.h>
+# include "../libft/ft_printf/ft_printf.h"
+# include "color.h"
+# include "../libft/libft/libft.h"
 
 # define BUF_SIZE 2048
 # define S_QUOTE 39
@@ -55,74 +55,74 @@ typedef struct		s_minishell
 	int		ret;
 }					t_minishell;
 
-t_minishell		g_shell;
+t_minishell			g_shell;
 
 /*
  ** cd.c
 */
 
-void			ft_error_cd(struct stat info, char *buf);
-int				ft_cd_home(char *buf);
-int				ft_cd(char *buf);
+void				ft_error_cd(struct stat info, char *buf);
+int					ft_cd_home(char *buf);
+int					ft_cd(char *buf);
 
 /*
  ** echo.c
 */
 
-char			*ft_str_add(char *s1, char const *s2);
-char			*ft_check_quote(char *buf);
-char			*ft_str_del_char(char *str, char c);
-int				ft_echo(char *buf);
-int				*ft_check_redir(char *buf, int fd[], int cmd);
+char				*ft_str_add(char *s1, char const *s2);
+char				*ft_check_quote(char *buf);
+char				*ft_str_del_char(char *str, char c);
+int					ft_echo(char *buf);
+int					*ft_check_redir(char *buf, int fd[], int cmd);
 
 /*
  ** export.c
 */
 
-int				ft_env(char *buf, char **env);
-int				ft_get_var(int i);
-int				ft_error_export(char *buf);
-int				ft_sort_env(char **env);
-char			**ft_add_var(char **env, char *buf, int len_env, int i);
-void			ft_del_var(char **env, int len);
-int				ft_find_var(char **env, char *var, char c);
-int				ft_change_var(char **env, int len);
-int				ft_export(char *buf);
-int				ft_get_var_2(int *i);
-int				ft_get_var_3(int *i);
-int				ft_get_var_4(int *i);
-int				ft_get_var_5(int *i);
+int					ft_env(char *buf, char **env);
+int					ft_get_var(int i);
+int					ft_error_export(char *buf);
+int					ft_sort_env(char **env);
+char				**ft_add_var(char **env, char *buf, int len_env, int i);
+void				ft_del_var(char **env, int len);
+int					ft_find_var(char **env, char *var, char c);
+int					ft_change_var(char **env, int len);
+int					ft_export(char *buf);
+int					ft_get_var_2(int *i);
+int					ft_get_var_3(int *i);
+int					ft_get_var_4(int *i);
+int					ft_get_var_5(int *i);
 
 /*
  ** ls.c
 */
 
-int				ft_ls(char *buf);
+int					ft_ls(char *buf);
 
 /*
  ** main.c
 */
 
-int				ft_check_parse(char *buf);
-int				ft_print_prompt();
-int				ft_get_cmd(char *buf);
-int				*ft_init_fd_tab(int *tab, int len);
-char			*ft_del_redir(char *buf);
-int				*ft_close_fd(int *fd);
-int				ft_ispipe_is_ptvirgule();
-void			ft_create_pipe(void);
+int					ft_check_parse(char *buf);
+int					ft_print_prompt();
+int					ft_get_cmd(char *buf);
+int					*ft_init_fd_tab(int *tab, int len);
+char				*ft_del_redir(char *buf);
+int					*ft_close_fd(int *fd);
+int					ft_ispipe_is_ptvirgule();
+void				ft_create_pipe(void);
 
 /*
  ** pwd.c
 */
 
-int				ft_pwd_error(char *buf, int error);
-int				ft_pwd(char *buf);
+int					ft_pwd_error(char *buf, int error);
+int					ft_pwd(char *buf);
 
 /*
  ** unset.c
 */
 
-int				ft_unset(char *buf);
+int					ft_unset(char *buf);
 
 #endif

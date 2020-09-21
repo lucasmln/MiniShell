@@ -85,6 +85,19 @@ char		*ft_dollars(char *buf)
 	return (new);
 }
 
+void		ft_copy_env_utils(const char **env, int i)
+{
+	if (!(ft_strncmp(env[i], "SHLVL=", ft_strlen("SHLVL="))))
+	{
+		g_shell.tmp = ft_itoa(ft_atoi(&env[i][ft_strlen("SHLVL=")]) + 1);
+		g_shell.sort_env[i] = ft_str_add(ft_strdup("SHLVL="), g_shell.tmp);
+		free(g_shell.tmp);
+		g_shell.tmp = NULL;
+	}
+	else
+		g_shell.sort_env[i] = ft_strdup(env[i]);
+}
+
 int			ft_copy_env(const char **env)
 {
 	int		i;
@@ -95,28 +108,17 @@ int			ft_copy_env(const char **env)
 		len++;
 	g_shell.len_env = len;
 	g_shell.len_exp = len;
-	if (!(g_shell.env = malloc(sizeof(char *) * (len + 1))))
-		return (0);
-	if (!(g_shell.sort_env = malloc(sizeof(char *) * (len + 1))))
+	if (!(g_shell.env = malloc(sizeof(char *) * (len + 1))) ||
+					!(g_shell.sort_env = malloc(sizeof(char *) * (len + 1))))
 		return (0);
 	i = -1;
 	while (env[++i])
-	{
-		if (!(ft_strncmp(env[i], "SHLVL=", ft_strlen("SHLVL="))))
-		{
-			g_shell.sort_env[i] = ft_str_add(ft_strdup("SHLVL="), (g_shell.tmp = ft_itoa(ft_atoi(&env[i][ft_strlen("SHLVL=")]) + 1)));
-			g_shell.env[i] = ft_strdup(g_shell.sort_env[i]);
-			free(g_shell.tmp);
-			g_shell.tmp = NULL;
-		}
-		else
-		{
-			g_shell.sort_env[i] = ft_strdup(env[i]);
-			g_shell.env[i] = ft_strdup(env[i]);
-		}
-	}
-	g_shell.env[i] = NULL;
+		ft_copy_env_utils(env, i);
 	g_shell.sort_env[i] = NULL;
+	i = -1;
+	while (g_shell.sort_env[++i])
+		g_shell.env[i] = ft_strdup(g_shell.sort_env[i]);
+	g_shell.env[i] = NULL;
 	ft_sort_env(g_shell.sort_env);
 	return (1);
 }
@@ -176,9 +178,7 @@ char		*ft_del_redir(char *buf)
 	while (buf[i])
 		if (buf[i] == '>')
 		{
-			i++;
-			if (buf[i] == '>')
-				i++;
+			i = buf[i + 1] == '>' ? i + 2 : i + 1;
 			while (buf[i] == ' ')
 				i++;
 			while (buf[i] && buf[i] != ' ')
@@ -189,13 +189,6 @@ char		*ft_del_redir(char *buf)
 		else
 			new[k++] = buf[i++];
 	new[k] = '\0';
-	k = -1;
-	while (new[++k])
-		if (new[k] == ';')
-		{
-			new[k] = '\0';
-			break ;
-		}
 	free(buf);
 	buf = NULL;
 	return (new);
@@ -206,10 +199,8 @@ char		**ft_check_input(char **argv)
 	int		i;
 	int		fd;
 	int		k;
-	char	*tmp;
 
 	i = 0;
-	tmp = NULL;
 	k = 0;
 	while (argv[i])
 	{
@@ -389,12 +380,12 @@ int			ft_exe(char *buf)
 	return (1);
 }
 
-int			ft_ispipe_is_ptvirgule()
+int			ft_ispipe_is_ptvirgule(void)
 {
 	char	*tmp;
 
-	tmp = g_shell.save != -1 ? ft_strdup(&g_shell.save_buf[g_shell.save + 1]):
-								ft_strdup(&g_shell.save_buf[g_shell.pip + 1]);;
+	tmp = g_shell.save != -1 ? ft_strdup(&g_shell.save_buf[g_shell.save + 1]) :
+								ft_strdup(&g_shell.save_buf[g_shell.pip + 1]);
 	free(g_shell.save_buf);
 	g_shell.save_buf = NULL;
 	return (ft_check_parse(tmp));
@@ -410,15 +401,9 @@ int			ft_get_cmd(char *buf)
 		i++;
 	if (!ft_strncmp(&buf[i], "cd", ft_strlen("cd")))
 		g_shell.ret = ft_cd(&buf[i + 2]);
-//	else if (!ft_strncmp(&buf[i], "pwd", ft_strlen("pwd")))
-//		g_shell.ret = ft_exe(&buf[i]);//ft_pwd(&buf[i + ft_strlen("pwd")]);
 	else if (!ft_strncmp(&buf[i], "export ", ft_strlen("export")))
 		g_shell.ret = ft_export(&buf[i + ft_strlen("export")]);
-/*	else if (!ft_strncmp(&buf[i], "env", ft_strlen("env")))
-**		g_shell.ret = ft_exe(&buf[i]);//  ft_env(&buf[i + ft_strlen("env")], g_shell.env);
-**	else if (!ft_strncmp(&buf[i], "echo", ft_strlen("echo")))
-**		g_shell.ret = ft_exe(&buf[i]);//  ft_echo(&buf[i + ft_strlen("echo")]);
-*/	else if (!(ft_strncmp(&buf[i], "unset", ft_strlen("unset"))))
+	else if (!(ft_strncmp(&buf[i], "unset", ft_strlen("unset"))))
 		g_shell.ret = ft_unset(&buf[i + ft_strlen("unset")]);
 	else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
 		exit(g_shell.ret);
@@ -466,6 +451,8 @@ int			ft_check_parse(char *buf)
 	int		i;
 
 	i = -1;
+	g_shell.fd = ft_init_fd_tab(g_shell.fd, 512);
+	g_shell.input = ft_init_fd_tab(g_shell.fd, 512);
 	if (g_shell.save_buf)
 	{
 		free(g_shell.save_buf);
@@ -478,10 +465,8 @@ int			ft_check_parse(char *buf)
 			ft_cond_parse(buf, i);
 		else
 		{
-			if (buf[i] == ';')
-				g_shell.save = i;
-			else if (buf[i] == '|')
-				g_shell.pip = i;
+			g_shell.save = buf[i] == ';' ? i : -1;
+			g_shell.pip = buf[i] == '|' ? i : -1;
 		}
 	}
 	g_shell.save != -1 ? buf[g_shell.save] = '\0' : 0;
