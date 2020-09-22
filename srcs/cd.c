@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:18 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/15 12:53:11 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/22 15:15:41 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void		ft_pass_redir_cd(char *buf, int *i, int *fd)
 	buf[*i] = '\0';
 	g_shell.tmp = ft_strdup(buf);
 	buf[*i] = g_shell.c;
-	ft_check_redir(g_shell.tmp, fd, 0);
+	ft_check_redir(g_shell.tmp, fd);
 	while (buf[*i] && buf[*i] == ' ')
 		*i += 1;
 }
@@ -68,7 +68,7 @@ int			ft_cd_utils(char *buf, int *i, int *redir)
 	g_shell.c = buf[*i];
 	buf[*i] = '\0';
 	g_shell.tmp = ft_strdup(&buf[k]);
-	g_shell.fd = ft_check_redir(g_shell.tmp, g_shell.fd, 1);
+	g_shell.fd = ft_check_redir(g_shell.tmp, g_shell.fd);
 	if (g_shell.fd[0] != -2)
 		buf = ft_del_redir(ft_strdup(buf));
 	buf[*i] = g_shell.c;
@@ -116,7 +116,7 @@ int			ft_cd(char *buf)
 	if (!buf[i] || buf[i] == '>')
 		return (ft_cd_home(&buf[i]));
 	i = -1;
-	g_shell.fd = ft_check_redir(ft_strdup(buf), g_shell.fd, 1);
+	g_shell.fd = ft_check_redir(ft_strdup(buf), g_shell.fd);
 	if (g_shell.fd[0] != -2)
 		buf = ft_del_redir(ft_strdup(buf));
 	while (buf[++i] && !redir)

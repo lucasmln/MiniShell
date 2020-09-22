@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/22 10:46:57 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/22 15:17:29 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,7 +178,7 @@ t_exe		ft_set_fd_path(t_exe ex)
 	ex.in = ft_init_fd_tab(ex.in, 512);
 	ex.binary = NULL;
 	ex.i = 0;
-	g_shell.fd = ft_check_redir(ft_strdup(ex.buf), g_shell.fd, 1);
+	g_shell.fd = ft_check_redir(ft_strdup(ex.buf), g_shell.fd);
 	if (g_shell.fd[0] != -2)
 		ex.buf = ft_del_redir(ft_strdup(ex.buf));
 	g_shell.fd[0] = g_shell.fd[0] == -2 ? 1 : g_shell.fd[0];
@@ -479,7 +479,10 @@ int			ft_print_prompt(void)
 	if (g_shell.buf[ret - 1] == 0)
 		exit(0);
 	g_shell.buf[ret] = '\0';
-	buf = ft_str_add(buf, g_shell.buf);
+	i = 0;
+	while (g_shell.buf[i] == ' ')
+		i++;
+	buf = ft_str_add(buf, &g_shell.buf[i]);
 	g_shell.save_pipfd[0] = 0;
 	return (ft_check_parse(buf));
 }

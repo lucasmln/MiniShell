@@ -6,40 +6,11 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/21 18:45:43 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/22 12:19:58 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/22 15:24:10 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
-char		*ft_del_redir(char *buf)
-{
-	char	*new;
-	int		i;
-	int		k;
-
-	i = 0;
-	k = 0;
-	if (!(new = malloc(sizeof(char) * ft_strlen(buf) + 1)))
-		return (NULL);
-	while (buf[i])
-		if (buf[i] == '>')
-		{
-			i = buf[i + 1] == '>' ? i + 2 : i + 1;
-			while (buf[i] == ' ')
-				i++;
-			while (buf[i] && buf[i] != ' ')
-				i++;
-			while (buf[i] == ' ')
-				i++;
-		}
-		else
-			new[k++] = buf[i++];
-	new[k] = '\0';
-	free(buf);
-	buf = NULL;
-	return (new);
-}
 
 char		**ft_open_input(char **argv, int *in, char **now)
 {
@@ -122,11 +93,10 @@ int			ft_redir_simp(char *buf, int fd, int i)
 	int		start;
 	int		save;
 
-	ft_printf(1, "c = %c\n", buf[i]);
-	while (buf[++i] == ' ')
-		;
+	if (buf[i] == ' ')
+		while (buf[++i] == ' ')
+			;
 	start = i;
-	ft_printf(1, "i = %d\n", i);
 	if (!buf[i])
 	{
 		ft_printf(1, "minishell: parse error after >\n");
@@ -144,30 +114,26 @@ int			ft_redir_simp(char *buf, int fd, int i)
 	return (fd);
 }
 
-int			*ft_check_redir(char *buf, int *fd, int cmd)
+int			*ft_check_redir(char *buf, int *fd)
 {
 	int		i;
 	int		start[2];
 
-	i = -1;
+	i = 0;
 	start[0] = 0;
 	start[1] = 0;
-	cmd++;
 	g_shell.nb_fd = 0;
-	while (buf[++i])
+	while (buf[i])
 	{
-		while (buf[i])
-		{
-			start[0] = buf[i] != '>' && buf[i] != ' ' ? i : start[0];
-			buf[i] == '>' && buf[i + 1] ? g_shell.nb_fd++ : 0;
-			if (buf[i] == '>' && buf[i + 1] != '>')
-				fd[g_shell.nb_fd - 1] = ft_redir_simp(buf, fd[g_shell.nb_fd - 1], ++i);
-			else if (buf[i] == '>' && buf[i + 1] == '>')
-				fd[g_shell.nb_fd - 1] = ft_doub_redir(buf, fd[g_shell.nb_fd - 1], ++i);
-			i++;
-		}
-		if (!buf[i])
-			break ;
+		start[0] = buf[i] != '>' && buf[i] != ' ' ? i : start[0];
+		buf[i] == '>' && buf[i + 1] ? g_shell.nb_fd++ : 0;
+		if (buf[i] == '>' && buf[i + 1] != '>')
+			fd[g_shell.nb_fd - 1] =
+								ft_redir_simp(buf, fd[g_shell.nb_fd - 1], ++i);
+		else if (buf[i] == '>' && buf[i + 1] == '>')
+			fd[g_shell.nb_fd - 1] =
+							ft_doub_redir(buf, fd[g_shell.nb_fd - 1], ++i);
+		i++;
 	}
 	ft_strdel(&buf);
 	return (fd);

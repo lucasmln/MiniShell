@@ -6,23 +6,11 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/25 18:18:46 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/18 14:47:03 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/22 15:26:29 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
-int			ft_error_unset(int error, char *buf)
-{
-	if (error == 0)
-		ft_printf(1, "minishell: command not found: unset%s\n", buf);
-	else if (error == 1)
-		ft_printf(1, "unset: not enough arguments\n", buf);
-	else if (error == 2)
-		ft_printf(1, "unset: %s: invalid parameter name\n", buf);
-	g_shell.ret = 1;
-	return (2);
-}
 
 void		ft_unset_var(char **env, int k, int len)
 {
@@ -39,24 +27,6 @@ void		ft_unset_var(char **env, int k, int len)
 	}
 	free(env[k]);
 	env[k] = NULL;
-}
-
-int			ft_check_error(char *buf, int *i, int *error)
-{
-	*error = 0;
-	*i = 0;
-	while (buf[*i] && buf[*i] == ' ')
-		*i += 1;
-	if (*i == 0 && buf[*i])
-		*error = ft_error_unset(0, buf);
-	else if (!buf[*i])
-		*error = ft_error_unset(1, buf);
-	if (*error && g_shell.save == -1)
-		return (2);
-	*error = 0;
-	g_shell.output = ft_strdup(&buf[*i]);
-	*i = 0;
-	return (0);
 }
 
 int			ft_unset_3(int *i, int *error, char *tmp)
@@ -107,7 +77,7 @@ char		*ft_unset_2(int *i)
 		g_shell.c = g_shell.output[*i];
 		g_shell.output[*i] = '\0';
 		g_shell.tmp = ft_strdup(&g_shell.output[k]);
-		g_shell.fd = ft_check_redir(g_shell.tmp, g_shell.fd, 0);
+		g_shell.fd = ft_check_redir(g_shell.tmp, g_shell.fd);
 		g_shell.output[*i] = g_shell.c;
 	}
 	g_shell.c = g_shell.output[*i];

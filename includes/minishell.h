@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/21 20:32:58 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/22 15:27:07 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,6 @@ int					ft_cd(char *buf);
 */
 
 char				*ft_str_add(char *s1, char const *s2);
-char				*ft_check_quote(char *buf);
 char				*ft_str_del_char(char *str, char c);
 int					ft_echo(char *buf);
 
@@ -102,8 +101,6 @@ int					ft_echo(char *buf);
 
 int					ft_env(char *buf, char **env);
 int					ft_get_var(int i);
-int					ft_error_export(char *buf);
-int					ft_sort_env(char **env);
 char				**ft_add_var(char **env, char *buf, int len_env, int i);
 void				ft_del_var(char **env, int len);
 int					ft_find_var(char **env, char *var, char c);
@@ -112,6 +109,33 @@ int					ft_export(char *buf);
 int					ft_get_var_2(int *i);
 int					ft_get_var_3(int *i);
 int					ft_get_var_4(int *i);
+int					ft_get_var_5(int *i);
+
+/*
+ ** export_2.c
+*/
+
+int					ft_error_export(char *buf);
+int					ft_sort_env(char **env);
+int					ft_export_no_pipe(void);
+void				ft_export_pipe_2(void);
+int					ft_export_pipe(void);
+
+/*
+ ** export_3.c
+*/
+
+char				**ft_add_var(char **env, char *buf, int len_env, int i);
+void				ft_del_var(char **env, int len);
+int					ft_find_var(char **env, char *var, char c);
+int					ft_change_var(char **env, int len);
+int					ft_get_var_7(int *i);
+
+/*
+ ** export_4.c
+*/
+
+int					ft_get_var_6(int *i);
 int					ft_get_var_5(int *i);
 
 /*
@@ -143,6 +167,14 @@ int					ft_pwd_error(char *buf, int error);
 int					ft_pwd(char *buf);
 
 /*
+ ** quote.c
+*/
+
+void				ft_init_quote(int *i, int *d_quote, int *s_quote);
+char				*ft_multiligne_quote(char *buf, int s_quote, int d_quote, int i);
+char				*ft_check_quote(char *buf);
+
+/*
  ** redir.c
 */
 
@@ -150,12 +182,19 @@ char				*ft_del_redir(char *buf);
 char				**ft_open_input(char **argv, int *in, char **now);
 char				**ft_check_input(char **argv, int *in);
 int					ft_double_redir(char *buf, int fd, int i);
-int					*ft_check_redir(char *buf, int *fd, int cmd);
+int					*ft_check_redir(char *buf, int *fd);
 
 /*
  ** unset.c
 */
 
 int					ft_unset(char *buf);
+
+/*
+ ** unset_utils.c
+*/
+
+int					ft_error_unset(int error, char *buf);
+int					ft_check_error(char *buf, int *i, int *error);
 
 #endif
