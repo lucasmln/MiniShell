@@ -3,66 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   export.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:15:40 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/17 10:55:42 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/22 09:51:27 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
-int			ft_env(char *buf, char **env)
-{
-	int		i;
-	char	*tmp;
-	int		fd;
-	int		k;
-
-	i = 0;
-	fd = 1;
-	tmp = NULL;
-	k = 0;
-	while (buf[i] == ' ')
-		i++;
-	if (buf[i] != ';' && buf[i] != '\0' && buf[i] != '>')
-	{
-		if (i == 0)
-			ft_printf(1, "minishell: command not found env%s\n", buf);
-		else
-			ft_printf(1, "env: take no argument\n");
-		return (2);
-	}
-	if (buf[i] == ';')
-		tmp = ft_strdup(&buf[i + 1]);
-	if (buf[i] == '>')
-	{
-		k = i;
-		while (buf[++i] == ' ')
-			;
-		while (buf[i] && buf[i] != ' ')
-			i++;
-		g_shell.c = buf[i];
-		buf[i] = '\0';
-		g_shell.tmp = ft_strdup(&buf[k]);
-		buf[i] = g_shell.c;
-		g_shell.fd = ft_check_redir(g_shell.tmp, g_shell.fd, 0);
-		while (buf[++i])
-			if (buf[i] != ' ' && buf[i] != '\0')
-				k = -1;
-	}
-	i = -1;
-	while (k != -1 && env[++i])
-	{
-		write(fd, env[i], ft_strlen(env[i]));
-		write(fd, "\n", 1);
-	}
-	if (k == -1)
-		ft_printf(1, "env: take no argument\n");
-	if (tmp)
-		return (ft_get_cmd(tmp));
-	return (1);
-}
 
 int			ft_error_export(char *buf)
 {
