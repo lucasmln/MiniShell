@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/21 18:45:43 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/22 10:45:18 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/09/22 12:19:58 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ char		**ft_check_input(char **argv, int *in)
 	return (new);
 }
 
-int			ft_double_redir(char *buf, int fd, int i)
+int			ft_doub_redir(char *buf, int fd, int i)
 {
 	int		k;
 	int		save[2];
@@ -117,14 +117,16 @@ int			ft_double_redir(char *buf, int fd, int i)
 	return (fd);
 }
 
-int			ft_redir_simple(char *buf, int fd, int i)
+int			ft_redir_simp(char *buf, int fd, int i)
 {
 	int		start;
 	int		save;
 
+	ft_printf(1, "c = %c\n", buf[i]);
 	while (buf[++i] == ' ')
-					;
+		;
 	start = i;
+	ft_printf(1, "i = %d\n", i);
 	if (!buf[i])
 	{
 		ft_printf(1, "minishell: parse error after >\n");
@@ -135,7 +137,8 @@ int			ft_redir_simple(char *buf, int fd, int i)
 		i++;
 	save = buf[i];
 	buf[i] = '\0';
-	if ((fd = open(&buf[start], O_TRUNC | O_CREAT | O_RDWR, S_IRUSR | S_IROTH | S_IRGRP | S_IWUSR, 0640)) == -1)
+	if ((fd = open(&buf[start], O_TRUNC | O_CREAT | O_RDWR, S_IRUSR | S_IROTH |
+												S_IRGRP | S_IWUSR, 0640)) == -1)
 		return (-1);
 	buf[i] = save;
 	return (fd);
@@ -155,25 +158,17 @@ int			*ft_check_redir(char *buf, int *fd, int cmd)
 	{
 		while (buf[i])
 		{
-			if (buf[i] != '>' && buf[i] != ' ')
-				start[0] = i;
+			start[0] = buf[i] != '>' && buf[i] != ' ' ? i : start[0];
+			buf[i] == '>' && buf[i + 1] ? g_shell.nb_fd++ : 0;
 			if (buf[i] == '>' && buf[i + 1] != '>')
-			{
-				fd[g_shell.nb_fd] = ft_redir_simple(buf, fd[g_shell.nb_fd], ++i);
-				fd[g_shell.nb_fd] >= 0 ? g_shell.nb_fd++ : 0;
-
-			}
+				fd[g_shell.nb_fd - 1] = ft_redir_simp(buf, fd[g_shell.nb_fd - 1], ++i);
 			else if (buf[i] == '>' && buf[i + 1] == '>')
-			{
-				fd[g_shell.nb_fd] = ft_double_redir(buf, fd[g_shell.nb_fd], ++i);
-				fd[g_shell.nb_fd] >= 0 ? g_shell.nb_fd++ : 0;
-			}
+				fd[g_shell.nb_fd - 1] = ft_doub_redir(buf, fd[g_shell.nb_fd - 1], ++i);
 			i++;
 		}
 		if (!buf[i])
-			break;
+			break ;
 	}
-	free(buf);
-	buf = NULL;
+	ft_strdel(&buf);
 	return (fd);
 }
