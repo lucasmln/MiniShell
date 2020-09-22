@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/21 21:06:32 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/22 10:46:57 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,11 +122,14 @@ void		ft_free_exe(t_exe ex)
 	ex.cmd = NULL;
 	free(ex.save_path);
 	ex.save_path = NULL;
-//	if (ex.binary)
-//		free(ex.binary);
-//	ex.binary = NULL;
+	if (ex.binary)
+		free(ex.binary);
+	ex.binary = NULL;
+	free(ex.in);
+	ex.in = 0;
+	free(ex.buf);
+	ex.buf = NULL;
 }
-
 
 void		ft_create_pipe(void)
 {
@@ -179,9 +182,11 @@ t_exe		ft_set_fd_path(t_exe ex)
 	if (g_shell.fd[0] != -2)
 		ex.buf = ft_del_redir(ft_strdup(ex.buf));
 	g_shell.fd[0] = g_shell.fd[0] == -2 ? 1 : g_shell.fd[0];
-	while (g_shell.sort_env[ex.i] && ft_strncmp(g_shell.sort_env[ex.i], "PATH=", 5))
+	while (g_shell.sort_env[ex.i] &&
+								ft_strncmp(g_shell.sort_env[ex.i], "PATH=", 5))
 		ex.i++;
-	ex.path = !g_shell.sort_env[ex.i] ? NULL : ft_strdup(&g_shell.sort_env[ex.i][5]);
+	ex.path = !g_shell.sort_env[ex.i] ? NULL :
+										ft_strdup(&g_shell.sort_env[ex.i][5]);
 	ex.save_path = ex.path;
 	return (ex);
 }
@@ -215,7 +220,8 @@ t_exe		ft_exe_pipe(t_exe ex)
 
 t_exe		ft_create_cmdpath(t_exe ex)
 {
-	if (!(ex.cmd_path = malloc(sizeof(char) * (ft_strlen(ex.cmd) + ft_strlen(ex.try_path) + 2))))
+	if (!(ex.cmd_path = malloc(sizeof(char) * (ft_strlen(ex.cmd) +
+												ft_strlen(ex.try_path) + 2))))
 		return (ex);
 	ex.i = -1;
 	while (ex.try_path[++ex.i])
@@ -241,9 +247,103 @@ int			ft_check_end_exe(t_exe ex)
 	return (1);
 }
 
+t_exe		ft_dup_sortie(t_exe ex)
+{
+	if (ex.in[0] > 0 && g_shell.save_pipfd[0] > 0)
+	{
+		ex.in[1] = dup(g_shell.save_pipfd[0]);
+		g_shell.nb_input++;
+		ft_add_input(ex.in, ex.fd);
+		close(g_shell.save_pipfd[0]);
+		g_shell.save_pipfd[0] = -2;
+	}
+	if (g_shell.fd[ex.i] > 0)
+		dup2(g_shell.fd[ex.i], STDOUT_FILENO);
+	if (ex.in[0] > 0)
+		dup2(ex.in[0], STDIN_FILENO);
+	if (g_shell.save_pipfd[0] > 0)
+		dup2(g_shell.save_pipfd[0], STDIN_FILENO);
+	return (ex);
+}
+
+t_exe		ft_exe_no_pipe(t_exe ex)
+{
+	ex.pid = fork();
+	if (ex.pid == 0)
+	{
+		ex = ft_dup_sortie(ex);
+		if (ex.binary && !stat(ex.binary, &ex.info))
+			exit((execve(ex.binary, ex.argv, g_shell.env)));
+		else
+			exit(execve(ex.cmd_path, ex.argv, g_shell.env));
+	}
+	else
+	{
+		if (g_shell.pipe_fd[0])
+		{
+			close(g_shell.pipe_fd[0]);
+			g_shell.pipe_fd[0] = 0;
+		}
+		waitpid(ex.pid, &ex.status, 0);
+		ex.save = -1;
+		if (ex.binary && stat(ex.binary, &ex.info))
+			ex.save = 0;
+	}
+	ex.i++;
+	return (ex);
+}
+
+t_exe		ft_loop_exe(t_exe ex)
+{
+	ex.try_path = ft_get_path(ex.path);
+	if (ex.cmd[0] == '/' || !ex.try_path)
+		ex.cmd_path = ft_strdup(ex.cmd);
+	else
+		ex = ft_create_cmdpath(ex);
+	if (!ex.cmd_path)
+		return (ex);
+	ft_create_pipe();
+	if (!stat(ex.cmd_path, &ex.info))
+	{
+		ex.i = 0;
+		while (g_shell.pip == -1 && (ex.i < g_shell.nb_fd ||
+					(g_shell.nb_fd == 0 && ex.i == 0)))
+			ex = ft_exe_no_pipe(ex);
+		if (g_shell.pip != -1)
+			ex = ft_exe_pipe(ex);
+	}
+	if (!ft_check_end_exe(ex))
+		return (ex);
+	ex.i = 0;
+	while (ex.path[ex.i] && ex.path[ex.i] != ':')
+		ex.i++;
+	ex.path = &ex.path[ex.i + 1];
+	return (ex);
+}
+
+int			ft_ex_2(t_exe ex)
+{
+	ex.argv = ft_split(ex.buf, ' ');
+	ex.argv = ft_check_input(ex.argv, ex.in);
+	ft_add_input(ex.in, ex.fd);
+	ex.i = -1;
+	while (1)
+	{
+		ex = ft_loop_exe(ex);
+		if (!ex.cmd_path || !ex.try_path || ex.save == -1)
+			break ;
+	}
+	g_shell.ret = ex.save == -1 ? ex.status / 256 : 0;
+	if (ex.save != -1)
+		ft_printf(1, "minishell: command not found: %s\n", ex.buf);
+	ft_free_exe(ex);
+	if (g_shell.save != -1 || g_shell.pip != -1)
+		return (ft_ispipe_is_ptvirgule());
+	return (1);
+}
+
 int			ft_exe(char *buf)
 {
-	struct stat		info;
 	t_exe			ex;
 
 	ex.buf = ft_strdup(buf);
@@ -263,84 +363,7 @@ int			ft_exe(char *buf)
 	else
 		ex.cmd = ft_strdup(ex.buf);
 	ex.buf[ex.i] = ex.save;
-	ex.argv = ft_split(ex.buf, ' ');
-	ex.argv = ft_check_input(ex.argv, ex.in);
-	ft_add_input(ex.in, ex.fd);
-	ex.i = -1;
-	while (1)
-	{
-		ex.try_path = ft_get_path(ex.path);
-		if (ex.cmd[0] == '/' || !ex.try_path)
-			ex.cmd_path = ft_strdup(ex.cmd);
-		else
-			ex = ft_create_cmdpath(ex);
-		if (!ex.cmd_path)
-			return (-1);
-		ft_create_pipe();
-		if (!stat(ex.cmd_path, &ex.info))
-		{
-			ex.i = 0;
-			while (g_shell.pip == -1 && (ex.i < g_shell.nb_fd || (g_shell.nb_fd == 0 && ex.i == 0)))
-			{
-				ex.k = 0;
-				ex.pid = fork();
-				if (ex.pid == 0)
-				{
-					if (ex.in[0] > 0 && g_shell.save_pipfd[0] > 0)
-					{
-						ex.in[1] = dup(g_shell.save_pipfd[0]);
-						g_shell.nb_input++;
-						ft_add_input(ex.in, ex.fd);
-						close(g_shell.save_pipfd[0]);
-						g_shell.save_pipfd[0] = -2;
-					}
-					ex.l = 0;
-					if (g_shell.fd[ex.i] > 0)
-						dup2(g_shell.fd[ex.i], STDOUT_FILENO);
-					if (ex.in[0] > 0)
-						dup2(ex.in[0], STDIN_FILENO);
-					if (g_shell.save_pipfd[0] > 0)
-						dup2(g_shell.save_pipfd[0], STDIN_FILENO);
-					if (ex.binary && !stat(ex.binary, &info))
-						exit((execve(ex.binary, ex.argv, g_shell.env)));
-					else
-						exit(execve(ex.cmd_path, ex.argv, g_shell.env));
-				}
-				else
-				{
-					if (g_shell.pipe_fd[0])
-					{
-						close(g_shell.pipe_fd[0]);
-						g_shell.pipe_fd[0] = 0;
-					}
-					waitpid(ex.pid, &ex.status, 0);
-					ex.save = -1;
-					if (ex.binary && stat(ex.binary, &ex.info))
-						ex.save = 0;
-				}
-				ex.i++;
-			}
-			if (g_shell.pip != -1)
-				ex = ft_exe_pipe(ex);
-		}
-		if (!ft_check_end_exe(ex))
-			break ;
-		ex.i = 0;
-		while (ex.path[ex.i] && ex.path[ex.i] != ':')
-			ex.i++;
-		ex.path = &ex.path[ex.i + 1];
-	}
-	ft_free_exe(ex);
-	g_shell.ret = ex.save == -1 ? ex.status / 256 : 0;
-	if (ex.save != -1)
-		ft_printf(1, "minishell: command not found: %s\n", buf);
-	free(ex.in);
-	ex.in = 0;
-//	free(buf);
-//	buf = NULL;
-	if (g_shell.save != -1 || g_shell.pip != -1)
-		return (ft_ispipe_is_ptvirgule());
-	return (1);
+	return (ft_ex_2(ex));
 }
 
 int			ft_ispipe_is_ptvirgule(void)
