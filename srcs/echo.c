@@ -6,22 +6,13 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/23 15:13:25 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/22 10:11:09 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/09/22 10:40:03 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-void		ft_strdel(char **as)
-{
-	if (as)
-	{
-		free(*as);
-		*as = NULL;
-	}
-}
-
-char		*ft_create_new(char *new, char *s1, char *s2)
+char		*ft_create_new(char *new, char *s1, char const *s2)
 {
 	int		len1;
 	int		len2;
@@ -49,7 +40,7 @@ char		*ft_str_add(char *s1, char const *s2)
 	if (!s2)
 	{
 		new = ft_strdup(s1);
-		ft_strdel(s1);
+		ft_strdel(&s1);
 		return (new);
 	}
 	while (s1[len1])
@@ -59,7 +50,7 @@ char		*ft_str_add(char *s1, char const *s2)
 	if (!(new = malloc(sizeof(char) * (len1 + len2 + 1))))
 		return (NULL);
 	new = ft_create_new(new, s1, s2);
-	ft_strdel(s1);
+	ft_strdel(&s1);
 	s1 = new;
 	return (s1);
 }
