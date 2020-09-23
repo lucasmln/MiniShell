@@ -176,6 +176,7 @@ void		ft_add_input(int *in, int *fd)
 		close(fd[1]);
 		exit(0);
 	}
+	waitpid(pid, &k, 0);
 	close(fd[1]);
 	ft_close_fd(in);
 	g_shell.nb_input = 1;
@@ -348,8 +349,7 @@ int			ft_ex_2(t_exe ex)
 	if (ex.save != -1)
 	{
 		g_shell.ret = 127;
-		close(g_shell.save_pipfd[0]);
-		g_shell.save_pipfd = 0;
+		g_shell.save_pipfd[0] = 0;
 		ft_printf(1, "minishell: command not found: %s\n", ex.buf);
 	}
 	ft_free_exe(ex);
@@ -405,6 +405,8 @@ char		*ft_add_path(char *buf, int *i)
 		new = ft_str_add(tmp, &buf[*i]);
 	else if (!ft_strncmp(&buf[*i], "echo ", 5))
 		new = ft_str_add(tmp, &buf[*i]);
+	else if (!ft_strncmp(&buf[*i], "env ", 5) | (!ft_strncmp(&buf[*i], "env", 3) && ft_strlen(&buf[*i]) == 3))
+		new = ft_str_add(ft_strdup("/usr/bin/"), &buf[*i]);
 	if (new)
 	{
 		ft_strdel(&buf);
@@ -415,6 +417,26 @@ char		*ft_add_path(char *buf, int *i)
 	return (buf);
 }
 
+int			ft_check_exit(char *buf)
+{
+	int		i;
+
+	if (!ft_strncmp(buf, "exit", 4))
+	{
+		i = 4;
+		if (!buf[i])
+			return (1);
+		while (buf[i])
+		{
+			if (buf[i] != ' ')
+				return (0);
+			i++;
+		}
+		return (1);
+	}
+	return (0);
+}
+
 int			ft_get_cmd(char *buf)
 {
 	int		i;
@@ -423,17 +445,15 @@ int			ft_get_cmd(char *buf)
 	g_shell.ret = 0;
 	while (buf[i] && buf[i] == ' ')
 		i++;
-	if (!ft_strncmp(&buf[i], "pwd", 3) || !ft_strncmp(&buf[i], "echo", 4))
-	{
+	if (!ft_strncmp(&buf[i], "pwd", 3) || !ft_strncmp(&buf[i], "echo", 4) || !ft_strncmp(&buf[i], "env", 3))
 		buf = ft_add_path(buf, &i);
-	}
 	if (!ft_strncmp(&buf[i], "cd", ft_strlen("cd")))
 		g_shell.ret = ft_cd(&buf[i + 2]);
 	else if (!ft_strncmp(&buf[i], "export ", ft_strlen("export")))
 		g_shell.ret = ft_export(&buf[i + ft_strlen("export")]);
 	else if (!(ft_strncmp(&buf[i], "unset", ft_strlen("unset"))))
 		g_shell.ret = ft_unset(&buf[i + ft_strlen("unset")]);
-	else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
+	else if (ft_check_exit(&buf[i]))
 		exit(g_shell.ret);
 	else
 		ft_exe(&buf[i]);
