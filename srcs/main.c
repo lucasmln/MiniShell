@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/23 12:02:11 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/23 12:04:28 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -425,8 +425,8 @@ int			ft_get_cmd(char *buf)
 		g_shell.ret = ft_unset(&buf[i + ft_strlen("unset")]);
 	else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
 		exit(g_shell.ret);
-	else if (!ft_exe(&buf[i]))
-		;
+	else
+		ft_exe(&buf[i]);
 	free(buf);
 	buf = NULL;
 	return ((g_shell.ret));
@@ -497,11 +497,9 @@ int			ft_print_prompt(void)
 	int		i;
 	int		ret;
 	char	*buf;
-	char	*tmp;
 
 	g_shell.dir = getcwd(g_shell.dir, BUF_SIZE);
 	i = ft_strlen(g_shell.dir);
-	tmp = NULL;
 	buf = NULL;
 	while (i >= 0 && g_shell.dir[i] != '/')
 		i--;
