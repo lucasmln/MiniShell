@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/22 15:17:29 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/23 11:57:21 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,8 +127,20 @@ void		ft_free_exe(t_exe ex)
 	ex.binary = NULL;
 	free(ex.in);
 	ex.in = 0;
-	free(ex.buf);
-	ex.buf = NULL;
+	ft_strdel(&ex.buf);
+}
+
+int			ft_check_end_exe(t_exe ex)
+{
+	free(ex.cmd_path);
+	ex.cmd_path = NULL;
+	if (!ex.try_path)
+		return (0);
+	free(ex.try_path);
+	ex.try_path = NULL;
+	if (ex.save == -1)
+		return (0);
+	return (1);
 }
 
 void		ft_create_pipe(void)
@@ -234,19 +246,6 @@ t_exe		ft_create_cmdpath(t_exe ex)
 	return (ex);
 }
 
-int			ft_check_end_exe(t_exe ex)
-{
-	free(ex.cmd_path);
-	ex.cmd_path = NULL;
-	if (!ex.try_path)
-		return (0);
-	free(ex.try_path);
-	ex.try_path = NULL;
-	if (ex.save == -1)
-		return (0);
-	return (1);
-}
-
 t_exe		ft_dup_sortie(t_exe ex)
 {
 	if (ex.in[0] > 0 && g_shell.save_pipfd[0] > 0)
@@ -292,6 +291,13 @@ t_exe		ft_exe_no_pipe(t_exe ex)
 	ex.i++;
 	return (ex);
 }
+
+/*
+ ** pour exemple : echo hey > 1 > 2 > 3
+ ** afin d'ecire uniquement dans le dernier fichier,
+ ** remplacer par ex.i = g_shell.nb_fd - 1 (l?)
+ ** et remplacer le while aui suit par if (g_shell.pip == -1) (l?)
+*/
 
 t_exe		ft_loop_exe(t_exe ex)
 {
@@ -363,7 +369,8 @@ int			ft_exe(char *buf)
 	else
 		ex.cmd = ft_strdup(ex.buf);
 	ex.buf[ex.i] = ex.save;
-	return (ft_ex_2(ex));
+	ex.i = ft_ex_2(ex);
+	return (ex.i);
 }
 
 int			ft_ispipe_is_ptvirgule(void)
@@ -377,6 +384,27 @@ int			ft_ispipe_is_ptvirgule(void)
 	return (ft_check_parse(tmp));
 }
 
+char		*ft_add_path(char *buf, int *i)
+{
+	char	*new;
+	char	*tmp;
+
+	new = NULL;
+	tmp = ft_strdup("/bin/");
+	if (!ft_strncmp(&buf[*i], "pwd ", 4) || (!ft_strncmp(&buf[*i], "pwd", 3) && ft_strlen(&buf[*i]) == 3))
+		new = ft_str_add(tmp, &buf[*i]);
+	else if (!ft_strncmp(&buf[*i], "echo ", 5))
+		new = ft_str_add(tmp, &buf[*i]);
+	if (new)
+	{
+		ft_strdel(&buf);
+		*i = 0;
+		return (new);
+	}
+	ft_strdel(&tmp);
+	return (buf);
+}
+
 int			ft_get_cmd(char *buf)
 {
 	int		i;
@@ -385,6 +413,8 @@ int			ft_get_cmd(char *buf)
 	g_shell.ret = 0;
 	while (buf[i] && buf[i] == ' ')
 		i++;
+	if (!ft_strncmp(&buf[i], "pwd", 3) || !ft_strncmp(&buf[i], "echo", 4))
+		buf = ft_add_path(buf, &i);
 	if (!ft_strncmp(&buf[i], "cd", ft_strlen("cd")))
 		g_shell.ret = ft_cd(&buf[i + 2]);
 	else if (!ft_strncmp(&buf[i], "export ", ft_strlen("export")))
@@ -436,11 +466,11 @@ int			ft_check_parse(char *buf)
 {
 	int		i;
 
-	i = -1;
-	g_shell.fd = ft_close_fd(g_shell.fd);
-	if (g_shell.save_buf)
+	if (g_shell.save)
 		free(g_shell.save_buf);
 	g_shell.save_buf = NULL;
+	i = -1;
+	g_shell.fd = ft_close_fd(g_shell.fd);
 	buf = ft_set_check_parse(buf);
 	while (buf[++i] && g_shell.save == -1 && g_shell.pip == -1)
 	{
