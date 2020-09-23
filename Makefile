@@ -1,80 +1,54 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2020/07/28 11:50:25 by lmoulin           #+#    #+#              #
-#    Updated: 2020/09/22 15:43:15 by lmoulin          ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+NAME			= Minishell
 
-CC =			gcc
+CFLAGS			= -Wall -Wextra -Werror #-g3 #-fsanitize=address
 
-FLAGS =			-Wall -Wextra -Werror
+SRC				=	./srcs/builtins/builtins.c \
+					./srcs/builtins/builtins_2.c \
+					./srcs/builtins/builtins_3.c \
+					./srcs/builtins/builtins_error.c \
+					./srcs/builtins/change_env_var.c \
+					./srcs/builtins/get_var.c \
+					./srcs/builtins/get_var_2.c \
+					./srcs/parsing/quote.c \
+					./srcs/parsing/redir.c \
+					./srcs/parsing/redir_utils.c \
+					./srcs/utils/main_utils.c \
+					./srcs/utils/manip_str.c \
+					./srcs/main.c \
 
-RM =			rm -rf
+ROAD_S			= $(SRC)
 
-DIR_HEADERS =	./includes/
+ROAD_O			= $(OBJ)
 
-DIR_SRCS =		./srcs/
-
-DIR_OBJS =		./objs/
-
-DIR_LIBFT =		./libft/libft/
-
-DIR_PRINTF =	./libft/ft_printf/
+ROAD_B			= $(SRCB)
 
 
-SRC =		builtins/builtins.c builtins/builtins_2.c builtins/builtins_3.c builtins/builtins_error.c \
-			builtins/change_env_var.c builtins/get_var.c builtins/get_var_2.c \
-			parsing/quote.c parsing/redir.c parsing/redir_utils.c \
-			utils/manip_str.c utils/main_utils.c \
-			main.c
+OBJ				= $(SRC:.c=.o)
 
+CC				= clang
 
-SRCS =			$(addprefix $(DIR_SRCS), $(SRC))
+HEADER_DIR		=  -I./includes/minishell.h 
 
-COMPIL =		$(FLAGS)
+$(NAME) :		$(OBJ)
+				@cd libft/libft && make && cp libft.a ../../lib
+				@cd libft/ft_printf && make && cp libftprintf.a ../../lib
+				$(CC) $(OBJ) lib/libftprintf.a lib/libft.a -ltermcap -o $(NAME)
 
-OBJS =			$(SRCS:.c=.o)
+LIBFT			= libft
 
-NAME =			MiniShell
+all :			$(NAME)
 
-all:			$(NAME)
+clean :
+				@cd libft/libft && make clean
+				@cd libft/ft_printf && make clean
+				@rm -f $(ROAD_O)
 
-$(NAME) :		$(OBJS)
-				@make -C $(DIR_PRINTF)
-				@cp $(DIR_PRINTF)libftprintf.a ./lib
-				@cp $(DIR_LIBFT)libft.a ./lib
-				@$(CC) $(COMPIL) -I $(DIR_HEADERS) $(OBJS) ./lib/libft.a ./lib/libftprintf.a -o $(NAME)
-				@mv ./srcs/*.o $(DIR_OBJS)
-				@echo "\033[1;34mMiniShell\t\033[1;33mCompilation\t\033[0;32m[OK]\033[0m"
+fclean :
+				@cd libft/libft && make fclean
+				@cd libft/ft_printf && make fclean
+				@rm -f $(ROAD_O)
+				@rm -f $(NAME)
 
-%.o: %.c
-				@gcc $(FLAGS) -I $(DIR_HEADERS) -c $< -o $@
-				@echo "Compiled "$<" successfully!"
+re : 			fclean all
 
-norme:
-				@make norme -C $(DIR_PRINTF)
-				@norminette $(DIR_SRCS)
-				@norminette $(DIR_HEADERS)
-				@echo "\033[1;34mMiniShell\t\033[1;33mNorminette\t\033[0;32m[OK]\033[0m"
-
-clean:
-				@$(RM) $(DIR_OBJS)*
-				@make clean -C $(DIR_PRINTF)
-				@echo "\033[1;34mMinishell\t\033[1;33mCleaning obj\t\033[0;32m[OK]\033[0m"
-
-fclean:	
-				@$(RM) $(DIR_OBJS)*
-				@echo "\033[1;34mMinishell\t\033[1;33mCleaning obj\t\033[0;32m[OK]\033[0m"
-				@$(RM) $(NAME)
-				@make fclean -C $(DIR_PRINTF)
-				@$(RM) ./lib/*
-				@echo "\033[1;34mMiniShell\t\033[1;33mCleaning lib\t\033[0;32m[OK]\033[0m"
-
-re:				fclean all
-
-.PHONY:			all, clean, fclean, re
+.PHONY: 		all clean fclean re

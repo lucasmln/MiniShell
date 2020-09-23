@@ -23,7 +23,7 @@ NAME = libftprintf.a
 SRC_PATH = ./
 LIB_PATH = ../libft
 INC_PATH = ../includes
-OBJ_PATH = ./objs
+OBJ_PATH = ./
 OBJLIB_PATH = ../libft/objs
 
 SRC_NAME =	ft_printf.c ft_annexe.c ft_arg.c ft_arg_2.c ft_flags.c \
@@ -48,23 +48,23 @@ $(NAME): $(OBJ)# $(OBJLIB)
 	@echo "\033[1;34mft_printf\t\033[1;33mCompilation\t\033[0;32m[OK]\033[0m"
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c
-	@mkdir $(OBJ_PATH) 2> /dev/null || true
+#	@mkdir $(OBJ_PATH) 2> /dev/null || true
 	@$(CC) -o $@ -c $<
 
 $(OBJLIB_PATH)/%.o: $(LIB_PATH)/%.c
-	@mkdir $(OBJLIB_PATH) 2> /dev/null || true
+#	@mkdir $(OBJLIB_PATH) 2> /dev/null || true
 	@$(CC) -o $@ -c $<
 
 clean:
 	@make clean -C ../libft
-	@rm -rf $(OBJ_PATH)
+	@rm -rf *.o
 	@echo "\033[1;34mft_printf\t\033[1;33mCleaning obj\t\033[0;32m[OK]\033[0m"
 
 fclean:
-	@rm -rf $(OBJ_PATH)
+	@rm -rf *.o
 	@echo "\033[1;34mft_printf\t\033[1;33mCleaning obj\t\033[0;32m[OK]\033[0m"
 	@make fclean -C ../libft
-	@rm -rf ./obj $(NAME)
+	@rm -rf *.a
 	@echo "\033[1;34mft_printf\t\033[1;33mCleaning lib\t\033[0;32m[OK]\033[0m"
 
 re: fclean all
