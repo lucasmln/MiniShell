@@ -258,6 +258,8 @@ t_exe		ft_dup_sortie(t_exe ex)
 	}
 	if (g_shell.fd[ex.i] > 0)
 		dup2(g_shell.fd[ex.i], STDOUT_FILENO);
+	if (ex.in[0] <= 0 && g_shell.save_pipfd[0] <= 0)
+		return (ex);
 	if (ex.in[0] > 0)
 		dup2(ex.in[0], STDIN_FILENO);
 	if (g_shell.save_pipfd[0] > 0)
@@ -341,7 +343,10 @@ int			ft_ex_2(t_exe ex)
 	}
 	g_shell.ret = ex.save == -1 ? ex.status / 256 : 0;
 	if (ex.save != -1)
+	{
+		g_shell.ret = 127;
 		ft_printf(1, "minishell: command not found: %s\n", ex.buf);
+	}
 	ft_free_exe(ex);
 	if (g_shell.save != -1 || g_shell.pip != -1)
 		return (ft_ispipe_is_ptvirgule());
