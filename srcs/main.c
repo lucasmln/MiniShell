@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/23 13:08:27 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/23 13:29:29 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -258,12 +258,10 @@ t_exe		ft_dup_sortie(t_exe ex)
 	}
 	if (g_shell.fd[ex.i] > 0)
 		dup2(g_shell.fd[ex.i], STDOUT_FILENO);
-	if (ex.in[0] <= 0 && g_shell.save_pipfd[0] <= 0)
-		return (ex);
-	if (ex.in[0] > 0)
-		dup2(ex.in[0], STDIN_FILENO);
 	if (g_shell.save_pipfd[0] > 0)
 		dup2(g_shell.save_pipfd[0], STDIN_FILENO);
+	if (ex.in[0] > 0)
+		dup2(ex.in[0], STDIN_FILENO);
 	return (ex);
 }
 
@@ -333,7 +331,7 @@ int			ft_ex_2(t_exe ex)
 {
 	ex.argv = ft_split(ex.buf, ' ');
 	ex.argv = ft_check_input(ex.argv, ex.in);
-	ft_add_input(ex.in, ex.fd);
+	g_shell.nb_input == 0 ? 0 : ft_add_input(ex.in, ex.fd);
 	ex.i = -1;
 	while (1)
 	{
