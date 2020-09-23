@@ -332,10 +332,53 @@ t_exe		ft_loop_exe(t_exe ex)
 	return (ex);
 }
 
+void			ft_free_av(char **av)
+{
+	int	i;
+
+	i = -1;
+	while (av[++i])
+	{
+		free(av[i]);
+		av[i] = NULL;
+	}
+	free(av);
+	av = NULL;
+}
+
+char			**ft_add_empty(char **av)
+{
+	int	i;
+	int	k;
+	char	**new;
+
+	k = 0;
+	i = 0;
+	if (!g_shell.argv_empty[0])
+		return (av);
+	while (av[k])
+		k++;
+	while (g_shell.argv_empty[i])
+		i++;
+	if (!(new = malloc(sizeof(char *) * (i + k + 1))))
+		exit(1000);
+	i = -1;
+	while (av[++i])
+		new[i] = ft_strdup(av[i]);
+	k = -1;
+	while (g_shell.argv_empty[++k])
+		new[k + i] = ft_strdup(g_shell.argv_empty[k]);
+	new[k + i] = NULL;
+	ft_free_av(av);
+	ft_free_av(g_shell.argv_empty);
+	return (new);
+}
+
 int			ft_ex_2(t_exe ex)
 {
 	ex.argv = ft_split(ex.buf, ' ');
 	ex.argv = ft_check_input(ex.argv, ex.in);
+	ex.argv = ft_add_empty(ex.argv);
 	if (g_shell.save_pipfd[0] > 0 || g_shell.nb_input > 0)
 		ft_add_input(ex.in, ex.fd);
 	ex.i = -1;
@@ -466,6 +509,7 @@ char		*ft_set_check_parse(char *buf)
 {
 	g_shell.save = -1;
 	g_shell.pip = -1;
+	g_shell.empty = 0;
 	g_shell.fd = ft_init_fd_tab(g_shell.fd, 512);
 	buf = ft_check_quote(buf);
 	if (buf[ft_strlen(buf) - 1] == '\n')
@@ -557,6 +601,7 @@ int			main(int ac, char **av, const char **env)
 		return (-1);
 	g_shell.fd = ft_init_fd_tab(g_shell.fd, 512);
 	signal(SIGINT, ft_get_signal);
+	signal(SIGQUIT, SIG_IGN);
 	while (1)
 	{
 		ft_print_prompt();
