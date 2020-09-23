@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/23 13:29:29 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/23 16:20:12 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,6 +127,7 @@ void		ft_free_exe(t_exe ex)
 	ex.binary = NULL;
 	free(ex.in);
 	ex.in = 0;
+	ft_strdel(&ex.buf);
 }
 
 int			ft_check_end_exe(t_exe ex)
@@ -218,7 +219,9 @@ t_exe		ft_exe_pipe(t_exe ex)
 	}
 	else
 	{
+		signal(SIGINT, SIG_IGN);
 		waitpid(ex.pid, &ex.status, 0);
+		signal(SIGINT, SIG_IGN);
 		ex.save = -1;
 		close(g_shell.pipe_fd[1]);
 		g_shell.pipe_fd[1] = 0;
@@ -282,7 +285,9 @@ t_exe		ft_exe_no_pipe(t_exe ex)
 			close(g_shell.pipe_fd[0]);
 			g_shell.pipe_fd[0] = 0;
 		}
+		signal(SIGINT, SIG_IGN);
 		waitpid(ex.pid, &ex.status, 0);
+		signal(SIGINT, ft_get_signal);
 		ex.save = -1;
 		if (ex.binary && stat(ex.binary, &ex.info))
 			ex.save = 0;
@@ -330,9 +335,8 @@ int			ft_ex_2(t_exe ex)
 {
 	ex.argv = ft_split(ex.buf, ' ');
 	ex.argv = ft_check_input(ex.argv, ex.in);
-	g_shell.nb_input == 0 ? 0 : ft_add_input(ex.in, ex.fd);
-	if (g_shell.save_pipfd[0] <= 0 && g_shell.nb_fd == 1)
-		dup2(0, STDIN_FILENO);		
+	if (g_shell.save_pipfd[0] > 0 || g_shell.nb_input > 0)
+		ft_add_input(ex.in, ex.fd);
 	ex.i = -1;
 	while (1)
 	{
@@ -344,6 +348,8 @@ int			ft_ex_2(t_exe ex)
 	if (ex.save != -1)
 	{
 		g_shell.ret = 127;
+		close(g_shell.save_pipfd[0]);
+		g_shell.save_pipfd = 0;
 		ft_printf(1, "minishell: command not found: %s\n", ex.buf);
 	}
 	ft_free_exe(ex);
@@ -356,7 +362,7 @@ int			ft_exe(char *buf)
 {
 	t_exe			ex;
 
-	ex.buf = buf;
+	ex.buf = ft_strdup(buf);
 	ex = ft_set_fd_path(ex);
 	if (!ex.in)
 		return (0);
@@ -374,7 +380,6 @@ int			ft_exe(char *buf)
 		ex.cmd = ft_strdup(ex.buf);
 	ex.buf[ex.i] = ex.save;
 	ex.i = ft_ex_2(ex);
-	ft_strdel(&ex.buf);
 	return (ex.i);
 }
 
@@ -410,27 +415,6 @@ char		*ft_add_path(char *buf, int *i)
 	return (buf);
 }
 
-void			ft_exit(void)
-{
-	int	i;
-
-	i = -1;
-	while (g_shell.sort_env[++i])
-		ft_strdel(&g_shell.sort_env[i]);
-	free(g_shell.sort_env);
-	g_shell.sort_env = NULL;
-	i = -1;
-	while (g_shell.env[++i])
-		ft_strdel(&g_shell.env[i]);
-	free(g_shell.env);
-	g_shell.env = NULL;
-	free(g_shell.fd);
-	g_shell.fd = NULL;
-	free(g_shell.dir);
-	g_shell.dir = NULL;
-	exit(g_shell.ret);
-}
-
 int			ft_get_cmd(char *buf)
 {
 	int		i;
@@ -450,7 +434,7 @@ int			ft_get_cmd(char *buf)
 	else if (!(ft_strncmp(&buf[i], "unset", ft_strlen("unset"))))
 		g_shell.ret = ft_unset(&buf[i + ft_strlen("unset")]);
 	else if (!ft_strncmp(buf, "exit", ft_strlen("exit")))
-		ft_exit();
+		exit(g_shell.ret);
 	else
 		ft_exe(&buf[i]);
 	free(buf);
