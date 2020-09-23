@@ -6,7 +6,7 @@
 /*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/23 11:57:21 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/23 12:02:11 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -414,7 +414,9 @@ int			ft_get_cmd(char *buf)
 	while (buf[i] && buf[i] == ' ')
 		i++;
 	if (!ft_strncmp(&buf[i], "pwd", 3) || !ft_strncmp(&buf[i], "echo", 4))
+	{
 		buf = ft_add_path(buf, &i);
+	}
 	if (!ft_strncmp(&buf[i], "cd", ft_strlen("cd")))
 		g_shell.ret = ft_cd(&buf[i + 2]);
 	else if (!ft_strncmp(&buf[i], "export ", ft_strlen("export")))
