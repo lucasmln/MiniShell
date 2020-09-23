@@ -77,10 +77,8 @@ void		ft_export_pipe_2(void)
 int			ft_export_pipe(void)
 {
 	pid_t	pid;
-	int		k;
 	int		i;
 
-	k = -1;
 	g_shell.fd[g_shell.nb_fd] = g_shell.pipe_fd[1];
 	pid = fork();
 	if (pid == 0)
