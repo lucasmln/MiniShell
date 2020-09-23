@@ -1,0 +1,10 @@
+libft/libft*.o
+libft/ft_printf/*.o
+srcs/*.o
+srcs/*/*.o
+hey
+oui
+non
+test
+ok
+Minishell
