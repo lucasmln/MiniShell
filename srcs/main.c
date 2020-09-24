@@ -105,7 +105,7 @@ char		*ft_get_path(char *path)
 	return (new);
 }
 
-void		ft_free_exe(t_exe ex)
+t_exe		ft_free_exe(t_exe ex)
 {
 	int		i;
 
@@ -118,8 +118,7 @@ void		ft_free_exe(t_exe ex)
 	}
 	free(ex.argv);
 	ex.argv = NULL;
-	free(ex.cmd);
-	ex.cmd = NULL;
+	ft_strdel(&ex.cmd);
 	free(ex.save_path);
 	ex.save_path = NULL;
 	if (ex.binary)
@@ -128,6 +127,9 @@ void		ft_free_exe(t_exe ex)
 	free(ex.in);
 	ex.in = 0;
 	ft_strdel(&ex.buf);
+	free(g_shell.argv_empty);
+	g_shell.argv_empty = NULL;
+	return (ex);
 }
 
 int			ft_check_end_exe(t_exe ex)
@@ -187,13 +189,13 @@ void		ft_add_input(int *in, int *fd)
 t_exe		ft_set_fd_path(t_exe ex)
 {
 	if (!(ex.in = malloc(sizeof(int) * (512))))
-		return (ex);
+		exit(-1000);
 	ex.in = ft_init_fd_tab(ex.in, 512);
 	ex.binary = NULL;
 	ex.i = 0;
 	g_shell.fd = ft_check_redir(ft_strdup(ex.buf), g_shell.fd);
 	if (g_shell.fd[0] != -2)
-		ex.buf = ft_del_redir(ft_strdup(ex.buf));
+		ex.buf = ft_del_redir(ex.buf);
 	g_shell.fd[0] = g_shell.fd[0] == -2 ? 1 : g_shell.fd[0];
 	while (g_shell.sort_env[ex.i] &&
 								ft_strncmp(g_shell.sort_env[ex.i], "PATH=", 5))
@@ -342,8 +344,6 @@ void			ft_free_av(char **av)
 		free(av[i]);
 		av[i] = NULL;
 	}
-	free(av);
-	av = NULL;
 }
 
 char			**ft_add_empty(char **av)
@@ -370,7 +370,11 @@ char			**ft_add_empty(char **av)
 		new[k + i] = ft_strdup(g_shell.argv_empty[k]);
 	new[k + i] = NULL;
 	ft_free_av(av);
+	free(av);
+	av = NULL;
 	ft_free_av(g_shell.argv_empty);
+	free(g_shell.argv_empty);
+	g_shell.argv_empty = NULL;
 	return (new);
 }
 
@@ -378,7 +382,8 @@ int			ft_ex_2(t_exe ex)
 {
 	ex.argv = ft_split(ex.buf, ' ');
 	ex.argv = ft_check_input(ex.argv, ex.in);
-	ex.argv = ft_add_empty(ex.argv);
+	if (ft_strncmp(ex.buf, "/bin/echo", 9))
+		ex.argv = ft_add_empty(ex.argv);
 	if (g_shell.save_pipfd[0] > 0 || g_shell.nb_input > 0)
 		ft_add_input(ex.in, ex.fd);
 	ex.i = -1;
@@ -395,7 +400,7 @@ int			ft_ex_2(t_exe ex)
 		g_shell.save_pipfd[0] = 0;
 		ft_printf(1, "minishell: command not found: %s\n", ex.buf);
 	}
-	ft_free_exe(ex);
+	ex = ft_free_exe(ex);
 	if (g_shell.save != -1 || g_shell.pip != -1)
 		return (ft_ispipe_is_ptvirgule());
 	return (1);
@@ -515,32 +520,34 @@ char		*ft_set_check_parse(char *buf)
 	if (buf[ft_strlen(buf) - 1] == '\n')
 		buf[ft_strlen(buf) - 1] = '\0';
 	g_shell.i_quote = 0;
+	if (g_shell.quote[0])
+		buf = ft_str_del_char(buf, g_shell.quote[0]);
 	g_shell.save_buf = ft_strdup(buf);
 	return (buf);
 }
 
 void		ft_cond_parse(char *buf, int i)
 {
-	if (buf[i] == g_shell.quote[0] &&
-								g_shell.quote_pos[g_shell.i_quote + 1] != -1)
+	if (g_shell.quote_pos[g_shell.i_quote + 1] != -1 && i == g_shell.quote_pos[g_shell.i_quote])
 		g_shell.i_quote += 2;
-	if (buf[i] == ';' && i > g_shell.quote_pos[g_shell.i_quote] &&
-									i < g_shell.quote_pos[g_shell.i_quote + 1])
+	if (buf[i] == ';' && i > g_shell.quote_pos[g_shell.i_quote - 1] &&
+									i < g_shell.quote_pos[g_shell.i_quote])
+		g_shell.save = i;
+	else if (g_shell.quote_pos[g_shell.i_quote] == -1 &&
+						i > g_shell.quote_pos[g_shell.i_quote - 1] && buf[i] == ';')
 		g_shell.save = i;
 	else if (g_shell.quote_pos[g_shell.i_quote + 1] == -1 &&
-						i > g_shell.quote_pos[g_shell.i_quote] && buf[i] == ';')
-		g_shell.save = i;
-	else if (g_shell.quote_pos[g_shell.i_quote + 1] == -1 &&
-						i > g_shell.quote_pos[g_shell.i_quote] && buf[i] == '|')
+						i > g_shell.quote_pos[g_shell.i_quote - 1] && buf[i] == '|')
 		g_shell.pip = i;
-	if (buf[i] == '|' && i > g_shell.quote_pos[g_shell.i_quote] &&
-									i < g_shell.quote_pos[g_shell.i_quote + 1])
-		g_shell.pip = '|';
+	if (buf[i] == '|' && i < g_shell.quote_pos[g_shell.i_quote] &&
+									i > g_shell.quote_pos[g_shell.i_quote + 1])
+		g_shell.pip = i;
 }
 
 int			ft_check_parse(char *buf)
 {
 	int		i;
+	int		k;
 
 	if (g_shell.save)
 		free(g_shell.save_buf);
@@ -548,6 +555,10 @@ int			ft_check_parse(char *buf)
 	i = -1;
 	g_shell.fd = ft_close_fd(g_shell.fd);
 	buf = ft_set_check_parse(buf);
+	k = -1;
+	while (g_shell.quote_pos[++k] != -1)
+		g_shell.quote_pos[k] = g_shell.quote_pos[k] - k;
+	g_shell.i_quote++;
 	while (buf[++i] && g_shell.save == -1 && g_shell.pip == -1)
 	{
 		if (g_shell.quote[0])
@@ -561,8 +572,6 @@ int			ft_check_parse(char *buf)
 	g_shell.save != -1 ? buf[g_shell.save] = '\0' : 0;
 	g_shell.pip != -1 ? buf[g_shell.pip] = '\0' : 0;
 	buf = ft_dollars(buf);
-	if (g_shell.quote[0])
-		buf = ft_str_del_char(buf, g_shell.quote[0]);
 	return (ft_get_cmd(buf));
 }
 

@@ -12,6 +12,25 @@
 
 #include "../../includes/minishell.h"
 
+int		ft_input_exist(char *test, char **av, int limite)
+{
+	int		i;
+	int		cmp;
+
+	i = 0;
+	cmp = 0;
+	while (av[i] && i < limite)
+	{
+		if (av[i][0] == '<' && ft_strlen(av[i]) > 1)
+			if (!ft_strncmp(test, &av[i][1], ft_strlen(test)))
+				cmp++;
+		if (!ft_strncmp(test, av[i], ft_strlen(test)))
+			cmp++;
+		i++;
+	}
+	return (cmp);
+}
+
 char		**ft_open_input(char **argv, int *in, char **now)
 {
 	int		i;
@@ -25,8 +44,15 @@ char		**ft_open_input(char **argv, int *in, char **now)
 		{
 			if (ft_strlen(argv[i]) == 1)
 			{
-				if ((in[g_shell.nb_input] = open(argv[i + 1], O_RDWR)) > 0)
-					g_shell.nb_input++;
+				if (!ft_input_exist(argv[i + 1], argv, i + 1))
+					if ((in[g_shell.nb_input] = open(argv[i + 1], O_RDWR)) > 0)
+						g_shell.nb_input++;
+			}
+			else
+			{
+				if (!ft_input_exist(&argv[i][1], argv, i))
+					if ((in[g_shell.nb_input] = open(&argv[i][1], O_RDWR)) > 0)
+						g_shell.nb_input++;
 			}
 			i++;
 			if (!argv[i])

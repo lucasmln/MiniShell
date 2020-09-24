@@ -49,6 +49,9 @@ int			ft_cd_home(char *buf)
 		else
 			chdir(&g_shell.env[i][5]);
 	}
+	ft_free_av(g_shell.argv_empty);
+	free(g_shell.argv_empty);
+	g_shell.argv_empty = NULL;
 	if (g_shell.save != -1 || g_shell.pip != -1)
 		return (ft_ispipe_is_ptvirgule());
 	return (1);
@@ -97,6 +100,9 @@ int			ft_cd_2(int redir, char *buf)
 	buf = NULL;
 	free(g_shell.output);
 	g_shell.output = NULL;
+	ft_free_av(g_shell.argv_empty);
+	free(g_shell.argv_empty);
+	g_shell.argv_empty = NULL;
 	if (g_shell.save != -1 || g_shell.pip != -1)
 		return (ft_ispipe_is_ptvirgule());
 	return (1);

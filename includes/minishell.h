@@ -37,7 +37,9 @@ typedef struct		s_minishell
 	char	*save_buf;
 	char	**env;
 	char	**sort_env;
+	char	**argv_empty;
 	char	quote[1];
+	int		empty;
 	int		quote_pos[BUF_SIZE];
 	int		i_quote;
 	int		len_exp;
@@ -49,7 +51,6 @@ typedef struct		s_minishell
 	int		pipe_fd[2];
 	int		save_pipfd[2];
 	int		pip;
-	int		i;
 	int		ret_export;
 	char	c;
 	int		ret;
@@ -149,6 +150,8 @@ int					*ft_init_fd_tab(int *tab, int len);
 char				*ft_del_redir(char *buf);
 int					ft_ispipe_is_ptvirgule();
 void				ft_create_pipe(void);
+void				ft_free_av(char **av);
+void				ft_cond_parse(char *buf, int i);
 
 /*
  ** main_utils.c

@@ -56,20 +56,23 @@ int			ft_create_empty(char *buf, int *i, int *l, int check)
 	if (buf[*i] == g_shell.quote[0])
 	{
 		k = 1;
-		while (buf[*i + k] && buf[*i + k] != g_shell.quote[0])
+		while (buf[*i + k] == ' ')
 			k++;
-		check = !buf[*i + k] ? 0 : 1;
+		check = buf[*i + k] == g_shell.quote[0] ? 1 : 0;
 		*i += k;
+		if (check == 0 && buf[*i + k])
+			while (buf[*i + k] && buf[*i + k] != g_shell.quote[0])
+				*i += 1;
 	}
 	if (check)
 	{
-		if (!(g_shell.argv_empty[*l] = malloc(sizeof(char) * (k + 3))))
+		if (!(g_shell.argv_empty[*l] = malloc(sizeof(char) * (k + 2))))
 			return (0);
-		g_shell.argv_empty[*l][k + 2] = '\0';
-		g_shell.argv_empty[*l][k + 1] = g_shell.quote[0];
+		g_shell.argv_empty[*l][k + 1] = '\0';
+		g_shell.argv_empty[*l][k] = g_shell.quote[0];
 		g_shell.argv_empty[*l][0] = g_shell.quote[0];
 		check = 1;
-		while (k >= check)
+		while (k > check)
 			g_shell.argv_empty[*l][check++] = ' ';
 		*l += 1;
 		*i += 1;
@@ -84,13 +87,16 @@ void		ft_check_empty(char *buf)
 	int	check;
 
 	i = -1;
+	l = -1;
+	if (!(g_shell.argv_empty = malloc(sizeof(char *) * (g_shell.i_quote / 2 + 1))))
+			exit(-1000);
 	l = 0;
-	if (!(g_shell.argv_empty = malloc(sizeof(char *) *
-						(g_shell.i_quote / 2 + 1))))
-		return ;
 	g_shell.argv_empty[g_shell.i_quote / 2] = NULL;
 	while (buf[++i])
 	{
+		ft_cond_parse(buf, i);
+		if (g_shell.pip != -1 || g_shell.save != -1)
+			break;
 		check = 0;
 		if (!ft_create_empty(buf, &i, &l, check))
 			break ;
@@ -119,6 +125,7 @@ char		*ft_check_quote(char *buf)
 			d_quote++;
 	}
 	ft_check_empty(save);
+	ft_strdel(&save);
 	if (s_quote % 2 != 0 || d_quote % 2 != 0)
 		buf = ft_multiligne_quote(buf, s_quote, d_quote, i);
 	g_shell.quote_pos[g_shell.i_quote] = -1;

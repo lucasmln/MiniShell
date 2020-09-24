@@ -12,6 +12,22 @@
 
 #include "../../includes/minishell.h"
 
+int		ft_len_sans_redir(char *buf)
+{
+	int		i;
+	int		len;
+
+	i = 0;
+	len = 0;
+	while (buf[i])
+	{
+		if (buf[i] != '>')
+			len++;
+		i++;
+	}
+	return (len);
+}
+
 char		*ft_del_redir(char *buf)
 {
 	char	*new;
@@ -20,7 +36,7 @@ char		*ft_del_redir(char *buf)
 
 	i = 0;
 	k = 0;
-	if (!(new = malloc(sizeof(char) * ft_strlen(buf) + 1)))
+	if (!(new = malloc(sizeof(char) * ft_len_sans_redir(buf) + 1)))
 		return (NULL);
 	while (buf[i])
 		if (buf[i] == '>')

@@ -137,6 +137,9 @@ int			ft_export(char *buf)
 	i = ft_get_var(0);
 	g_shell.output ? free(g_shell.output) : 0;
 	g_shell.output = NULL;
+	ft_free_av(g_shell.argv_empty);
+	free(g_shell.argv_empty);
+	g_shell.argv_empty = NULL;
 	if (g_shell.save != -1 || g_shell.pip != -1)
 		return (ft_ispipe_is_ptvirgule());
 	return (i);

@@ -126,6 +126,9 @@ int			ft_unset(char *buf)
 		if (!ft_free_unset(tmp, &i))
 			break ;
 	}
+	ft_free_av(g_shell.argv_empty);
+	free(g_shell.argv_empty);
+	g_shell.argv_empty = NULL;
 	if (g_shell.save != -1 || g_shell.pip != -1)
 		return (ft_ispipe_is_ptvirgule());
 	return (1);

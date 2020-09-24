@@ -1,6 +1,6 @@
 NAME			= Minishell
 
-CFLAGS			= -Wall -Wextra -Werror #-g3 #-fsanitize=address
+CFLAGS			= -Wall -Wextra -Werror -g3 #-fsanitize=address
 
 SRC				=	./srcs/builtins/builtins.c \
 					./srcs/builtins/builtins_2.c \
