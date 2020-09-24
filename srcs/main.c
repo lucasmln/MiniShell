@@ -514,15 +514,11 @@ char		*ft_set_check_parse(char *buf)
 {
 	g_shell.save = -1;
 	g_shell.pip = -1;
-	g_shell.empty = 0;
 	g_shell.fd = ft_init_fd_tab(g_shell.fd, 512);
-	buf = ft_check_quote(buf);
 	if (buf[ft_strlen(buf) - 1] == '\n')
 		buf[ft_strlen(buf) - 1] = '\0';
+	buf = ft_check_quote(buf);
 	g_shell.i_quote = 0;
-	if (g_shell.quote[0])
-		buf = ft_str_del_char(buf, g_shell.quote[0]);
-	g_shell.save_buf = ft_strdup(buf);
 	return (buf);
 }
 
@@ -536,41 +532,29 @@ void		ft_cond_parse(char *buf, int i)
 	else if (g_shell.quote_pos[g_shell.i_quote] == -1 &&
 						i > g_shell.quote_pos[g_shell.i_quote - 1] && buf[i] == ';')
 		g_shell.save = i;
-	else if (g_shell.quote_pos[g_shell.i_quote + 1] == -1 &&
+	else if (buf[i] == '|' && i > g_shell.quote_pos[g_shell.i_quote - 1] &&
+									i < g_shell.quote_pos[g_shell.i_quote])
+		g_shell.pip = i;
+	else if (g_shell.quote_pos[g_shell.i_quote] == -1 &&
 						i > g_shell.quote_pos[g_shell.i_quote - 1] && buf[i] == '|')
 		g_shell.pip = i;
-	if (buf[i] == '|' && i < g_shell.quote_pos[g_shell.i_quote] &&
-									i > g_shell.quote_pos[g_shell.i_quote + 1])
-		g_shell.pip = i;
+
 }
 
 int			ft_check_parse(char *buf)
 {
 	int		i;
-	int		k;
 
 	if (g_shell.save)
 		free(g_shell.save_buf);
 	g_shell.save_buf = NULL;
-	i = -1;
 	g_shell.fd = ft_close_fd(g_shell.fd);
 	buf = ft_set_check_parse(buf);
-	k = -1;
-	while (g_shell.quote_pos[++k] != -1)
-		g_shell.quote_pos[k] = g_shell.quote_pos[k] - k;
-	g_shell.i_quote++;
-	while (buf[++i] && g_shell.save == -1 && g_shell.pip == -1)
-	{
-		if (g_shell.quote[0])
-			ft_cond_parse(buf, i);
-		else
-		{
-			g_shell.save = buf[i] == ';' ? i : -1;
-			g_shell.pip = buf[i] == '|' ? i : -1;
-		}
-	}
-	g_shell.save != -1 ? buf[g_shell.save] = '\0' : 0;
-	g_shell.pip != -1 ? buf[g_shell.pip] = '\0' : 0;
+	i = 0;
+	while (buf[i] == ' ')
+		i++;
+	if (!ft_strncmp(&buf[i], "echo", 4) && g_shell.quote[0])
+		buf = ft_str_del_char(buf, g_shell.quote[0]);
 	buf = ft_dollars(buf);
 	return (ft_get_cmd(buf));
 }

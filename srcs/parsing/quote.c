@@ -60,8 +60,8 @@ int			ft_create_empty(char *buf, int *i, int *l, int check)
 			k++;
 		check = buf[*i + k] == g_shell.quote[0] ? 1 : 0;
 		*i += k;
-		if (check == 0 && buf[*i + k])
-			while (buf[*i + k] && buf[*i + k] != g_shell.quote[0])
+		if (check == 0 && buf[*i])
+			while (buf[*i] && buf[*i] != g_shell.quote[0])
 				*i += 1;
 	}
 	if (check)
@@ -113,7 +113,7 @@ char		*ft_check_quote(char *buf)
 
 	ft_init_quote(&i, &d_quote, &s_quote);
 	save = ft_strdup(buf);
-	while (buf[++i])
+	while (buf[++i] && g_shell.pip == -1 && g_shell.save == -1)
 	{
 		if (!g_shell.quote[0] && (buf[i] == S_QUOTE || buf[i] == '"'))
 			g_shell.quote[0] = buf[i];
@@ -123,9 +123,25 @@ char		*ft_check_quote(char *buf)
 			s_quote++;
 		if (buf[i] == '"' && '"' == g_shell.quote[0])
 			d_quote++;
+		if (buf[i] == ';' && s_quote % 2 == 0 && d_quote % 2 == 0)
+			g_shell.save = i;
+		if (buf[i] == '|' && s_quote % 2 == 0 && d_quote % 2 == 0)
+			g_shell.pip = i;
 	}
-	ft_check_empty(save);
-	ft_strdel(&save);
+	buf[i - 1] = g_shell.pip != -1 || g_shell.save != -1 ? '\0' : buf[i -1];
+	g_shell.tmp = ft_strdup(buf);
+	ft_check_empty(buf);
+	if (g_shell.quote[0])
+		buf = ft_str_del_char(buf, g_shell.quote[0]);
+	i = ft_strlen(buf);
+	if (g_shell.pip != -1 || g_shell.save != -1)
+	{
+		g_shell.save_buf = ft_str_add(buf, &save[g_shell.pip != -1 ? g_shell.pip : g_shell.save]);
+		g_shell.save = g_shell.save != -1 ? i : -1;
+		g_shell.pip = g_shell.pip != -1 ? i : -1;
+		buf = ft_strdup(g_shell.tmp);
+	}
+	ft_strdel(&g_shell.tmp);
 	if (s_quote % 2 != 0 || d_quote % 2 != 0)
 		buf = ft_multiligne_quote(buf, s_quote, d_quote, i);
 	g_shell.quote_pos[g_shell.i_quote] = -1;

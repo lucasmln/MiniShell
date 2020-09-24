@@ -39,12 +39,12 @@ typedef struct		s_minishell
 	char	**sort_env;
 	char	**argv_empty;
 	char	quote[1];
-	int		empty;
 	int		quote_pos[BUF_SIZE];
 	int		i_quote;
 	int		len_exp;
 	int		len_env;
 	int		save;
+	int		save_i;
 	int		*fd;
 	int		nb_fd;
 	int		nb_input;
