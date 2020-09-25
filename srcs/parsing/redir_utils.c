@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   redir_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/22 15:23:49 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/22 15:23:59 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/25 12:41:08 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
-int		ft_len_sans_redir(char *buf)
+int			ft_len_sans_redir(char *buf)
 {
 	int		i;
 	int		len;
@@ -55,4 +55,23 @@ char		*ft_del_redir(char *buf)
 	free(buf);
 	buf = NULL;
 	return (new);
+}
+
+int			ft_input_exist(char *test, char **av, int limite)
+{
+	int		i;
+	int		cmp;
+
+	i = 0;
+	cmp = 0;
+	while (av[i] && i < limite)
+	{
+		if (av[i][0] == '<' && ft_strlen(av[i]) > 1)
+			if (!ft_strncmp(test, &av[i][1], ft_strlen(test)))
+				cmp++;
+		if (!ft_strncmp(test, av[i], ft_strlen(test)))
+			cmp++;
+		i++;
+	}
+	return (cmp);
 }

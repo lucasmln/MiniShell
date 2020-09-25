@@ -6,30 +6,11 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/21 18:45:43 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/22 15:24:10 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/25 12:49:16 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
-
-int		ft_input_exist(char *test, char **av, int limite)
-{
-	int		i;
-	int		cmp;
-
-	i = 0;
-	cmp = 0;
-	while (av[i] && i < limite)
-	{
-		if (av[i][0] == '<' && ft_strlen(av[i]) > 1)
-			if (!ft_strncmp(test, &av[i][1], ft_strlen(test)))
-				cmp++;
-		if (!ft_strncmp(test, av[i], ft_strlen(test)))
-			cmp++;
-		i++;
-	}
-	return (cmp);
-}
 
 char		**ft_open_input(char **argv, int *in, char **now)
 {

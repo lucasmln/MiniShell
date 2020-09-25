@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/23 16:20:12 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/25 12:59:59 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,64 +25,6 @@ void		ft_get_signal(int code)
 		ft_printf(1, "\n" BOLDGREEN "➜ " RESET BOLDCYAN " %s " RESET,
 														&g_shell.dir[i + 1]);
 	}
-}
-
-char		*ft_dollars_2(int *i, char *new, char *buf, int save)
-{
-	int		start;
-	int		pos;
-
-	start = *i += 1;
-	if (buf[*i] && (ft_isalnum(buf[*i]) || buf[*i] == '_'))
-	{
-		while (buf[*i] && (ft_isalnum(buf[*i]) || buf[*i] == '_'))
-			*i += 1;
-		save = buf[*i];
-		buf[*i] = '\0';
-		pos = ft_find_var(g_shell.sort_env, &buf[start], '=');
-		new = ft_str_add(new, ft_strchr(g_shell.sort_env[pos], '=') ?
-				ft_strchr(g_shell.sort_env[pos], '=') + 1 : "");
-		buf[*i] = save;
-	}
-	else if (buf[*i] == '?')
-	{
-		g_shell.tmp = ft_itoa(g_shell.ret);
-		new = ft_str_add(new, g_shell.tmp);
-		free(g_shell.tmp);
-		*i += 1;
-	}
-	else
-		new = ft_str_add(new, "$");
-	return (new);
-}
-
-char		*ft_dollars(char *buf)
-{
-	int		i;
-	int		save;
-	char	*new;
-
-	i = 0;
-	if (!(new = malloc(sizeof(char) * 1)))
-		return (NULL);
-	new[0] = '\0';
-	while (buf[i])
-	{
-		if (buf[i] == '$')
-			new = ft_dollars_2(&i, new, buf, save);
-		else
-		{
-			save = buf[i + 1];
-			buf[i + 1] = '\0';
-			new = ft_str_add(new, &buf[i]);
-			buf[i + 1] = save;
-			i++;
-		}
-	}
-	g_shell.tmp = NULL;
-	free(buf);
-	buf = NULL;
-	return (new);
 }
 
 char		*ft_get_path(char *path)
@@ -378,70 +320,6 @@ char			**ft_add_empty(char **av)
 	return (new);
 }
 
-int			ft_ex_2(t_exe ex)
-{
-	ex.argv = ft_split(ex.buf, ' ');
-	ex.argv = ft_check_input(ex.argv, ex.in);
-	if (ft_strncmp(ex.buf, "/bin/echo", 9))
-		ex.argv = ft_add_empty(ex.argv);
-	if (g_shell.save_pipfd[0] > 0 || g_shell.nb_input > 0)
-		ft_add_input(ex.in, ex.fd);
-	ex.i = -1;
-	while (1)
-	{
-		ex = ft_loop_exe(ex);
-		if (!ex.cmd_path || !ex.try_path || ex.save == -1)
-			break ;
-	}
-	g_shell.ret = ex.save == -1 ? ex.status / 256 : 0;
-	if (ex.save != -1)
-	{
-		g_shell.ret = 127;
-		g_shell.save_pipfd[0] = 0;
-		ft_printf(1, "minishell: command not found: %s\n", ex.buf);
-	}
-	ex = ft_free_exe(ex);
-	if (g_shell.save != -1 || g_shell.pip != -1)
-		return (ft_ispipe_is_ptvirgule());
-	return (1);
-}
-
-int			ft_exe(char *buf)
-{
-	t_exe			ex;
-
-	ex.buf = ft_strdup(buf);
-	ex = ft_set_fd_path(ex);
-	if (!ex.in)
-		return (0);
-	ex.i = 0;
-	while (ex.buf[ex.i] && ex.buf[ex.i] != ' ')
-		ex.i++;
-	ex.save = ex.buf[ex.i];
-	ex.buf[ex.i] = '\0';
-	if (!(ft_strncmp(ex.buf, "./", ft_strlen("./"))))
-	{
-		ex.cmd = ft_strdup("./");
-		ex.binary = ft_strdup(&ex.buf[2]);
-	}
-	else
-		ex.cmd = ft_strdup(ex.buf);
-	ex.buf[ex.i] = ex.save;
-	ex.i = ft_ex_2(ex);
-	return (ex.i);
-}
-
-int			ft_ispipe_is_ptvirgule(void)
-{
-	char	*tmp;
-
-	tmp = g_shell.save != -1 ? ft_strdup(&g_shell.save_buf[g_shell.save + 1]) :
-								ft_strdup(&g_shell.save_buf[g_shell.pip + 1]);
-	free(g_shell.save_buf);
-	g_shell.save_buf = NULL;
-	return (ft_check_parse(tmp));
-}
-
 char		*ft_add_path(char *buf, int *i)
 {
 	char	*new;
@@ -508,55 +386,6 @@ int			ft_get_cmd(char *buf)
 	free(buf);
 	buf = NULL;
 	return ((g_shell.ret));
-}
-
-char		*ft_set_check_parse(char *buf)
-{
-	g_shell.save = -1;
-	g_shell.pip = -1;
-	g_shell.fd = ft_init_fd_tab(g_shell.fd, 512);
-	if (buf[ft_strlen(buf) - 1] == '\n')
-		buf[ft_strlen(buf) - 1] = '\0';
-	buf = ft_check_quote(buf);
-	g_shell.i_quote = 0;
-	return (buf);
-}
-
-void		ft_cond_parse(char *buf, int i)
-{
-	if (g_shell.quote_pos[g_shell.i_quote + 1] != -1 && i == g_shell.quote_pos[g_shell.i_quote])
-		g_shell.i_quote += 2;
-	if (buf[i] == ';' && i > g_shell.quote_pos[g_shell.i_quote - 1] &&
-									i < g_shell.quote_pos[g_shell.i_quote])
-		g_shell.save = i;
-	else if (g_shell.quote_pos[g_shell.i_quote] == -1 &&
-						i > g_shell.quote_pos[g_shell.i_quote - 1] && buf[i] == ';')
-		g_shell.save = i;
-	else if (buf[i] == '|' && i > g_shell.quote_pos[g_shell.i_quote - 1] &&
-									i < g_shell.quote_pos[g_shell.i_quote])
-		g_shell.pip = i;
-	else if (g_shell.quote_pos[g_shell.i_quote] == -1 &&
-						i > g_shell.quote_pos[g_shell.i_quote - 1] && buf[i] == '|')
-		g_shell.pip = i;
-
-}
-
-int			ft_check_parse(char *buf)
-{
-	int		i;
-
-	if (g_shell.save)
-		free(g_shell.save_buf);
-	g_shell.save_buf = NULL;
-	g_shell.fd = ft_close_fd(g_shell.fd);
-	buf = ft_set_check_parse(buf);
-	i = 0;
-	while (buf[i] == ' ')
-		i++;
-	if (!ft_strncmp(&buf[i], "echo", 4) && g_shell.quote[0])
-		buf = ft_str_del_char(buf, g_shell.quote[0]);
-	buf = ft_dollars(buf);
-	return (ft_get_cmd(buf));
 }
 
 int			ft_print_prompt(void)

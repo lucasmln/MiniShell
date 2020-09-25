@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/22 15:27:07 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/25 13:02:11 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,6 +186,7 @@ char				**ft_open_input(char **argv, int *in, char **now);
 char				**ft_check_input(char **argv, int *in);
 int					ft_double_redir(char *buf, int fd, int i);
 int					*ft_check_redir(char *buf, int *fd);
+int					ft_input_exist(char *test, char **av, int limite);
 
 /*
  ** unset.c
@@ -199,5 +200,27 @@ int					ft_unset(char *buf);
 
 int					ft_error_unset(int error, char *buf);
 int					ft_check_error(char *buf, int *i, int *error);
+
+/*
+ ** ft_dollars.c
+*/
+
+char		*ft_dollars(char *buf);
+char		*ft_dollars_2(int *i, char *new, char *buf, int save);
+
+/*
+ ** parse.c
+*/
+
+char		*ft_set_check_parse(char *buf);
+void		ft_cond_parse(char *buf, int i);
+int			ft_check_parse(char *buf);
+
+/*
+ ** ft_exe.c
+*/
+
+int			ft_ex_2(t_exe ex);
+int			ft_exe(char *buf);
 
 #endif
