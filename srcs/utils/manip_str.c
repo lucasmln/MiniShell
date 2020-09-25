@@ -3,14 +3,26 @@
 /*                                                        :::      ::::::::   */
 /*   manip_str.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lmoulin <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/22 15:30:47 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/22 15:31:05 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/09/25 15:35:29 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
+
+void			ft_free_av(char **av)
+{
+	int	i;
+
+	i = -1;
+	while (av[++i])
+	{
+		free(av[i]);
+		av[i] = NULL;
+	}
+}
 
 char		*ft_create_new(char *new, char *s1, char const *s2)
 {
