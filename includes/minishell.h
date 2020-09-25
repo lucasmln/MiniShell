@@ -89,6 +89,13 @@ int					ft_cd_home(char *buf);
 int					ft_cd(char *buf);
 
 /*
+ ** builtins_utils.c
+*/
+
+void				ft_free_empty(void);
+void				ft_pass_input(char *buf, int *i);
+
+/*
  ** echo.c
 */
 

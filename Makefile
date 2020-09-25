@@ -9,6 +9,7 @@ SRC				=	./srcs/builtins/builtins.c \
 					./srcs/builtins/change_env_var.c \
 					./srcs/builtins/get_var.c \
 					./srcs/builtins/get_var_2.c \
+					./srcs/builtins/builtins_utils.c \
 					./srcs/parsing/quote.c \
 					./srcs/parsing/redir.c \
 					./srcs/parsing/redir_utils.c \
