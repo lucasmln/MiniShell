@@ -149,9 +149,14 @@ int					ft_get_cmd(char *buf);
 int					*ft_init_fd_tab(int *tab, int len);
 char				*ft_del_redir(char *buf);
 int					ft_ispipe_is_ptvirgule();
+t_exe					ft_set_fd_path(t_exe ex);
+char					**ft_add_empty(char **);
 void				ft_create_pipe(void);
 void				ft_free_av(char **av);
 void				ft_cond_parse(char *buf, int i);
+void				ft_add_input(int *in, int *fd);
+t_exe				ft_loop_exe(t_exe ex);
+t_exe				ft_free_exe(t_exe ex);
 
 /*
  ** main_utils.c

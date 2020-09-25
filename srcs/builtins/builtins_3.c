@@ -108,20 +108,19 @@ int			ft_unset(char *buf)
 	int		error;
 	char	*tmp;
 
-	if (ft_check_error(buf, &i, &error))
-		return (2);
-	while (g_shell.output[i])
+	ft_check_error(buf, &i, &error);
+	while (g_shell.output[i] && !error && g_shell.pip == -1)
 	{
 		while (g_shell.output[i] && g_shell.output[i] == ' ')
 			i++;
 		g_shell.tmp = ft_strdup(&g_shell.output[i]);
-		free(g_shell.output);
+		ft_strdel(&g_shell.output);
 		g_shell.output = g_shell.tmp;
 		tmp = ft_unset_2(&i);
 		if (!ft_unset_3(&i, &error, tmp))
 			break ;
 		g_shell.tmp = ft_strdup(&g_shell.output[i]);
-		free(g_shell.output);
+		ft_strdel(&g_shell.output);
 		g_shell.output = g_shell.tmp;
 		if (!ft_free_unset(tmp, &i))
 			break ;
@@ -129,7 +128,6 @@ int			ft_unset(char *buf)
 	ft_free_av(g_shell.argv_empty);
 	free(g_shell.argv_empty);
 	g_shell.argv_empty = NULL;
-	if (g_shell.save != -1 || g_shell.pip != -1)
-		return (ft_ispipe_is_ptvirgule());
-	return (1);
+	return (g_shell.save != -1 || g_shell.pip != -1 ?
+						ft_ispipe_is_ptvirgule() : 1);
 }
