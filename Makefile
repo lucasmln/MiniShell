@@ -18,6 +18,10 @@ SRC				=	./srcs/builtins/builtins.c \
 					./srcs/main.c \
 					./srcs/ft_dollars.c \
 					./srcs/ft_exe.c \
+					./srcs/ft_exe_utils.c \
+					./srcs/ft_exe_utils2.c \
+					./srcs/ft_exe_utils3.c \
+					./srcs/ft_print_prompt.c \
 					./srcs/parse.c \
 
 ROAD_S			= $(SRC)

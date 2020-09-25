@@ -21,8 +21,7 @@ void		ft_add_input(int *in, int *fd)
 
 	pipe(fd);
 	pid = fork();
-	k = -1;
-	if (pid == 0)
+	if ((k = -1) == -1 && pid == 0)
 	{
 		close(fd[0]);
 		while (++k < g_shell.nb_input)

@@ -78,8 +78,7 @@ char			**ft_add_empty(char **av)
 	char		**new;
 
 	k = 0;
-	i = 0;
-	if (!g_shell.argv_empty[0])
+	if ((i = 0) != 0 || !g_shell.argv_empty[0])
 		return (av);
 	while (av[k])
 		k++;
@@ -97,8 +96,6 @@ char			**ft_add_empty(char **av)
 	ft_free_av(av);
 	free(av);
 	av = NULL;
-	ft_free_av(g_shell.argv_empty);
-	free(g_shell.argv_empty);
-	g_shell.argv_empty = NULL;
+	ft_free_empty();
 	return (new);
 }

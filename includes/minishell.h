@@ -242,4 +242,12 @@ int			ft_check_parse(char *buf);
 int			ft_ex_2(t_exe ex);
 int			ft_exe(char *buf);
 
+void		ft_get_signal(int code);
+t_exe			ft_dup_sortie(t_exe ex);
+int				ft_check_end_exe(t_exe ex);
+t_exe		ft_exe_pipe(t_exe ex);
+t_exe		ft_exe_no_pipe(t_exe ex);
+char		*ft_get_path(char *path);
+t_exe		ft_create_cmdpath(t_exe ex);
+
 #endif
