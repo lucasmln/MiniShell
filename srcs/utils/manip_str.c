@@ -12,7 +12,7 @@
 
 #include "../../includes/minishell.h"
 
-void			ft_free_av(char **av)
+void		ft_free_av(char **av)
 {
 	int	i;
 

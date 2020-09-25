@@ -6,12 +6,13 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/25 12:59:59 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/09/25 16:17:18 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
+<<<<<<< HEAD
 void		ft_get_signal(int code)
 {
 	int			i;
@@ -308,6 +309,8 @@ char			**ft_add_empty(char **av)
 	return (new);
 }
 
+=======
+>>>>>>> 9ddbab0af7b546e9407d3fa99813f6f3f959b841
 char		*ft_add_path(char *buf, int *i)
 {
 	char	*new;
@@ -315,11 +318,13 @@ char		*ft_add_path(char *buf, int *i)
 
 	new = NULL;
 	tmp = ft_strdup("/bin/");
-	if (!ft_strncmp(&buf[*i], "pwd ", 4) || (!ft_strncmp(&buf[*i], "pwd", 3) && ft_strlen(&buf[*i]) == 3))
+	if (!ft_strncmp(&buf[*i], "pwd ", 4) ||
+		(!ft_strncmp(&buf[*i], "pwd", 3) && ft_strlen(&buf[*i]) == 3))
 		new = ft_str_add(tmp, &buf[*i]);
 	else if (!ft_strncmp(&buf[*i], "echo ", 5))
 		new = ft_str_add(tmp, &buf[*i]);
-	else if (!ft_strncmp(&buf[*i], "env ", 5) | (!ft_strncmp(&buf[*i], "env", 3) && ft_strlen(&buf[*i]) == 3))
+	else if (!ft_strncmp(&buf[*i], "env ", 5) |
+			(!ft_strncmp(&buf[*i], "env", 3) && ft_strlen(&buf[*i]) == 3))
 		new = ft_str_add(ft_strdup("/usr/bin/"), &buf[*i]);
 	if (new)
 	{
@@ -359,7 +364,8 @@ int			ft_get_cmd(char *buf)
 	g_shell.ret = 0;
 	while (buf[i] && buf[i] == ' ')
 		i++;
-	if (!ft_strncmp(&buf[i], "pwd", 3) || !ft_strncmp(&buf[i], "echo", 4) || !ft_strncmp(&buf[i], "env", 3))
+	if (!ft_strncmp(&buf[i], "pwd", 3) ||
+		!ft_strncmp(&buf[i], "echo", 4) || !ft_strncmp(&buf[i], "env", 3))
 		buf = ft_add_path(buf, &i);
 	if (!ft_strncmp(&buf[i], "cd", ft_strlen("cd")))
 		g_shell.ret = ft_cd(&buf[i + 2]);
@@ -376,29 +382,19 @@ int			ft_get_cmd(char *buf)
 	return ((g_shell.ret));
 }
 
-int			ft_print_prompt(void)
+void		ft_get_signal(int code)
 {
-	int		i;
-	int		ret;
-	char	*buf;
+	int			i;
 
-	g_shell.dir = getcwd(g_shell.dir, BUF_SIZE);
-	i = ft_strlen(g_shell.dir);
-	buf = NULL;
-	while (i >= 0 && g_shell.dir[i] != '/')
-		i--;
-	ft_printf(1, "" BOLDGREEN "➜ " RESET BOLDCYAN " %s " RESET,
+	if (code == SIGINT)
+	{
+		g_shell.dir = getcwd(g_shell.dir, BUF_SIZE);
+		i = ft_strlen(g_shell.dir);
+		while (i >= 0 && g_shell.dir[i] != '/')
+			i--;
+		ft_printf(1, "\n" BOLDGREEN "➜ " RESET BOLDCYAN " %s " RESET,
 														&g_shell.dir[i + 1]);
-	ret = read(0, g_shell.buf, BUF_SIZE);
-	if (g_shell.buf[ret - 1] == 0)
-		exit(0);
-	g_shell.buf[ret] = '\0';
-	i = 0;
-	while (g_shell.buf[i] == ' ')
-		i++;
-	buf = ft_str_add(buf, &g_shell.buf[i]);
-	g_shell.save_pipfd[0] = 0;
-	return (ft_check_parse(buf));
+	}
 }
 
 int			main(int ac, char **av, const char **env)

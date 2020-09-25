@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 12:54:22 by jvaquer           #+#    #+#             */
-/*   Updated: 2020/09/25 12:59:23 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/09/25 15:59:50 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,21 +26,21 @@ char		*ft_set_check_parse(char *buf)
 
 void		ft_cond_parse(char *buf, int i)
 {
-	if (g_shell.quote_pos[g_shell.i_quote + 1] != -1 && i == g_shell.quote_pos[g_shell.i_quote])
+	if (g_shell.quote_pos[g_shell.i_quote + 1] != -1 &&
+		i == g_shell.quote_pos[g_shell.i_quote])
 		g_shell.i_quote += 2;
 	if (buf[i] == ';' && i > g_shell.quote_pos[g_shell.i_quote - 1] &&
-									i < g_shell.quote_pos[g_shell.i_quote])
+		i < g_shell.quote_pos[g_shell.i_quote])
 		g_shell.save = i;
 	else if (g_shell.quote_pos[g_shell.i_quote] == -1 &&
-						i > g_shell.quote_pos[g_shell.i_quote - 1] && buf[i] == ';')
+			i > g_shell.quote_pos[g_shell.i_quote - 1] && buf[i] == ';')
 		g_shell.save = i;
 	else if (buf[i] == '|' && i > g_shell.quote_pos[g_shell.i_quote - 1] &&
-									i < g_shell.quote_pos[g_shell.i_quote])
+			i < g_shell.quote_pos[g_shell.i_quote])
 		g_shell.pip = i;
 	else if (g_shell.quote_pos[g_shell.i_quote] == -1 &&
-						i > g_shell.quote_pos[g_shell.i_quote - 1] && buf[i] == '|')
+			i > g_shell.quote_pos[g_shell.i_quote - 1] && buf[i] == '|')
 		g_shell.pip = i;
-
 }
 
 int			ft_check_parse(char *buf)

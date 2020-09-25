@@ -66,13 +66,11 @@ int			ft_create_empty(char *buf, int *i, int *l, int check)
 	}
 	if (check)
 	{
-		if (!(g_shell.argv_empty[*l] = malloc(sizeof(char) * (k + 2))))
-			return (0);
-		g_shell.argv_empty[*l][k + 1] = '\0';
-		g_shell.argv_empty[*l][k] = g_shell.quote[0];
-		g_shell.argv_empty[*l][0] = g_shell.quote[0];
-		check = 1;
-		while (k > check)
+		if (!(g_shell.argv_empty[*l] = malloc(sizeof(char) * (k))))
+			exit(-1000);
+		g_shell.argv_empty[*l][k - 1] = '\0';
+		check = 0;
+		while (k - 1 > check)
 			g_shell.argv_empty[*l][check++] = ' ';
 		*l += 1;
 		*i += 1;

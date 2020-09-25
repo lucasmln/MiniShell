@@ -15,12 +15,10 @@
 char		**ft_open_input(char **argv, int *in, char **now)
 {
 	int		i;
-	int		k;
 
-	i = 0;
-	k = 0;
-	while (argv[i])
-	{
+	i = -1;
+	g_shell.i = 0;
+	while (argv[++i])
 		if (argv[i][0] == '<')
 		{
 			if (ft_strlen(argv[i]) == 1)
@@ -35,15 +33,11 @@ char		**ft_open_input(char **argv, int *in, char **now)
 					if ((in[g_shell.nb_input] = open(&argv[i][1], O_RDWR)) > 0)
 						g_shell.nb_input++;
 			}
-			i++;
-			if (!argv[i])
-				break ;
+			i = !argv[i + 1] ? i : i + 1;
 		}
 		else
-			now[k++] = ft_strdup(argv[i]);
-		i++;
-	}
-	now[k] = NULL;
+			now[g_shell.i++] = ft_strdup(argv[i]);
+	now[g_shell.i] = NULL;
 	return (now);
 }
 

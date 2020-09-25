@@ -41,6 +41,7 @@ typedef struct		s_minishell
 	char	quote[1];
 	int		quote_pos[BUF_SIZE];
 	int		i_quote;
+	int		i;
 	int		len_exp;
 	int		len_env;
 	int		save;
@@ -94,6 +95,12 @@ int					ft_cd(char *buf);
 
 void				ft_free_empty(void);
 void				ft_pass_input(char *buf, int *i);
+
+/*
+ ** manip_str.c
+*/
+
+void				ft_free_av(char **av);
 
 /*
  ** echo.c
