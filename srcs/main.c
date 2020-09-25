@@ -276,18 +276,6 @@ t_exe		ft_loop_exe(t_exe ex)
 	return (ex);
 }
 
-void			ft_free_av(char **av)
-{
-	int	i;
-
-	i = -1;
-	while (av[++i])
-	{
-		free(av[i]);
-		av[i] = NULL;
-	}
-}
-
 char			**ft_add_empty(char **av)
 {
 	int	i;
