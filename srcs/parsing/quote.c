@@ -116,8 +116,7 @@ char		*ft_check_quote(char *buf)
 		g_shell.pip = g_shell.pip != -1 ? i : -1;
 		buf = ft_strdup(g_shell.tmp);
 	}
-	if (g_shell.quote[0])
-		buf = ft_str_del_char(buf, g_shell.quote[0]);
+	buf = g_shell.quote[0] ? ft_str_del_char(buf, g_shell.quote[0]) : buf;
 	ft_strdel(&g_shell.tmp);
 	ft_strdel(&save);
 	if (s_quote % 2 != 0 || d_quote % 2 != 0)

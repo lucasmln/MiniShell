@@ -126,9 +126,9 @@ int			ft_export(char *buf)
 		g_shell.fd = ft_check_redir(ft_strdup(&buf[i]), g_shell.fd);
 		g_shell.pip == -1 ? ft_export_no_pipe() : ft_export_pipe();
 		g_shell.fd = ft_close_fd(g_shell.fd);
-		if (g_shell.save != -1 || g_shell.pip != -1)
-			return (ft_ispipe_is_ptvirgule());
-		return (1);
+		ft_free_empty();
+		return (g_shell.save != -1 || g_shell.pip != -1 ?
+					ft_ispipe_is_ptvirgule() : 1);
 	}
 	g_shell.output = ft_strdup(&buf[i]);
 	if (!ft_isalpha(g_shell.output[(i = 0)]) && g_shell.output[i] != '_')

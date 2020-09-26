@@ -157,6 +157,7 @@ int					ft_get_var_5(int *i);
  ** main.c
 */
 
+void				ft_free_exit(char *buf, int exe);
 int					ft_check_parse(char *buf);
 int					ft_print_prompt();
 int					ft_get_cmd(char *buf);

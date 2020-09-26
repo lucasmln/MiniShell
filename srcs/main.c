@@ -75,11 +75,11 @@ int			ft_get_cmd(char *buf)
 	else if (!(ft_strncmp(&buf[i], "unset", ft_strlen("unset"))))
 		g_shell.ret = ft_unset(&buf[i + ft_strlen("unset")]);
 	else if (ft_check_exit(&buf[i]))
-		exit(g_shell.ret);
+		ft_free_exit(buf, 0);
 	else
 		ft_exe(&buf[i]);
-	free(buf);
-	buf = NULL;
+	ft_strdel(&buf);
+	g_shell.argv_empty ? ft_free_empty() : 0;
 	return ((g_shell.ret));
 }
 

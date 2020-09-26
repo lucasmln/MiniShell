@@ -76,3 +76,25 @@ int			*ft_close_fd(int *fd)
 	fd = ft_init_fd_tab(fd, 512);
 	return (fd);
 }
+
+void		ft_free_exit(char *buf, int exe)
+{
+	if (!exe)
+	{
+		ft_free_av(g_shell.env);
+		free(g_shell.env);
+		g_shell.env = NULL;
+	}
+	ft_free_av(g_shell.sort_env);
+	free(g_shell.sort_env);
+	g_shell.sort_env = NULL;
+	ft_free_av(g_shell.argv_empty);
+	free(g_shell.argv_empty);
+	g_shell.argv_empty = NULL;
+	ft_strdel(&buf);
+	ft_strdel(&g_shell.save_buf);
+	ft_strdel(&g_shell.dir);
+	free(g_shell.fd);
+	g_shell.fd = NULL;
+	exit(g_shell.ret);
+}
