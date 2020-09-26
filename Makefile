@@ -13,6 +13,7 @@ SRC				=	./srcs/builtins/builtins.c \
 					./srcs/parsing/quote.c \
 					./srcs/parsing/redir.c \
 					./srcs/parsing/redir_utils.c \
+					./srcs/parsing/parse.c \
 					./srcs/utils/main_utils.c \
 					./srcs/utils/manip_str.c \
 					./srcs/main.c \
@@ -22,7 +23,6 @@ SRC				=	./srcs/builtins/builtins.c \
 					./srcs/ft_exe_utils2.c \
 					./srcs/ft_exe_utils3.c \
 					./srcs/ft_print_prompt.c \
-					./srcs/parse.c \
 
 ROAD_S			= $(SRC)
 

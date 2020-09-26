@@ -192,9 +192,9 @@ int					ft_pwd(char *buf);
  ** quote.c
 */
 
-void				ft_init_quote(int *i, int *d_quote, int *s_quote);
 char				*ft_multiligne_quote(char *buf, int s_quote, int d_quote, int i);
 char				*ft_check_quote(char *buf);
+
 
 /*
  ** redir.c
@@ -231,6 +231,7 @@ char		*ft_dollars_2(int *i, char *new, char *buf, int save);
  ** parse.c
 */
 
+int			ft_create_empty(char *buf, int *i, int *l, int check);
 char		*ft_set_check_parse(char *buf);
 void		ft_cond_parse(char *buf, int i);
 int			ft_check_parse(char *buf);
