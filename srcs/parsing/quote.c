@@ -27,9 +27,11 @@ char		*ft_multiligne_quote(char *buf, int s_quote, int d_quote, int i)
 	int		k;
 	int		ret;
 
-	while (s_quote % 2 != 0 || d_quote % 2 != 0)
+	g_shell.s_q = s_quote;
+	g_shell.d_q = d_quote;
+	while (g_shell.s_q % 2 != 0 || g_shell.d_q % 2 != 0)
 	{
-		s_quote > 0 ? ft_printf(1, "quote> ") : ft_printf(1, "dquote> ");
+		g_shell.s_q > 0 ? ft_printf(1, "quote> ") : ft_printf(1, "dquote> ");
 		ret = read(0, g_shell.buf, BUF_SIZE);
 		g_shell.buf[ret] = '\0';
 		k = 0;
@@ -37,11 +39,17 @@ char		*ft_multiligne_quote(char *buf, int s_quote, int d_quote, int i)
 		{
 			if (g_shell.buf[k] == g_shell.quote[0])
 				g_shell.quote_pos[g_shell.i_quote++] = i + k;
-			s_quote = g_shell.buf[k] == S_QUOTE && S_QUOTE == g_shell.quote[0] ?
-								s_quote + 1 : s_quote;
-			d_quote = g_shell.buf[k] == '"' && '"' == g_shell.quote[0] ?
-														d_quote + 1 : d_quote;
+			g_shell.s_q = g_shell.buf[k] == S_QUOTE && S_QUOTE == g_shell.quote[0] ?
+								g_shell.s_q + 1 : g_shell.s_q;
+			g_shell.d_q = g_shell.buf[k] == '"' && '"' == g_shell.quote[0] ?
+														g_shell.d_q + 1 : g_shell.d_q;
 			k++;
+		}
+		if (!g_shell.s_q && !g_shell.d_q)
+		{
+			ft_printf(1, "here\n");
+			ft_strdel(&buf);
+			return (ft_strdup(""));
 		}
 		if (!(buf = ft_str_add(buf, g_shell.buf)))
 			return (NULL);

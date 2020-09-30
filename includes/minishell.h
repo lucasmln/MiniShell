@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/25 13:02:11 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/09/30 12:36:24 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,8 @@ typedef struct		s_minishell
 	char	quote[1];
 	int		quote_pos[BUF_SIZE];
 	int		i_quote;
+	int		s_q;
+	int		d_q;
 	int		i;
 	int		len_exp;
 	int		len_env;
@@ -55,6 +57,7 @@ typedef struct		s_minishell
 	int		ret_export;
 	char	c;
 	int		ret;
+	int		save_ret;
 }					t_minishell;
 
 typedef struct		s_exe
@@ -62,7 +65,7 @@ typedef struct		s_exe
 	pid_t			pid;
 	int				*in;
 	char			**argv;
-	struct	stat	info;
+	struct stat		info;
 	char			*cmd;
 	char			*path;
 	char			*save_path;
@@ -77,7 +80,6 @@ typedef struct		s_exe
 	int				fd[2];
 	char			*buf;
 }					t_exe;
-
 
 t_minishell			g_shell;
 
@@ -164,8 +166,8 @@ int					ft_get_cmd(char *buf);
 int					*ft_init_fd_tab(int *tab, int len);
 char				*ft_del_redir(char *buf);
 int					ft_ispipe_is_ptvirgule();
-t_exe					ft_set_fd_path(t_exe ex);
-char					**ft_add_empty(char **);
+t_exe				ft_set_fd_path(t_exe ex);
+char				**ft_add_empty(char **av);
 void				ft_create_pipe(void);
 void				ft_free_av(char **av);
 void				ft_cond_parse(char *buf, int i);
@@ -193,9 +195,9 @@ int					ft_pwd(char *buf);
  ** quote.c
 */
 
-char				*ft_multiligne_quote(char *buf, int s_quote, int d_quote, int i);
+char				*ft_multiligne_quote(char *buf, int s_quote, int d_quote,
+																		int i);
 char				*ft_check_quote(char *buf);
-
 
 /*
  ** redir.c
@@ -225,31 +227,31 @@ int					ft_check_error(char *buf, int *i, int *error);
  ** ft_dollars.c
 */
 
-char		*ft_dollars(char *buf);
-char		*ft_dollars_2(int *i, char *new, char *buf, int save);
+char				*ft_dollars(char *buf);
+char				*ft_dollars_2(int *i, char *now, char *buf, int save);
 
 /*
  ** parse.c
 */
 
-int			ft_create_empty(char *buf, int *i, int *l, int check);
-char		*ft_set_check_parse(char *buf);
-void		ft_cond_parse(char *buf, int i);
-int			ft_check_parse(char *buf);
+int					ft_create_empty(char *buf, int *i, int *l, int check);
+char				*ft_set_check_parse(char *buf);
+void				ft_cond_parse(char *buf, int i);
+int					ft_check_parse(char *buf);
 
 /*
  ** ft_exe.c
 */
 
-int			ft_ex_2(t_exe ex);
-int			ft_exe(char *buf);
+int					ft_ex_2(t_exe ex);
+int					ft_exe(char *buf);
 
-void		ft_get_signal(int code);
-t_exe			ft_dup_sortie(t_exe ex);
-int				ft_check_end_exe(t_exe ex);
-t_exe		ft_exe_pipe(t_exe ex);
-t_exe		ft_exe_no_pipe(t_exe ex);
-char		*ft_get_path(char *path);
-t_exe		ft_create_cmdpath(t_exe ex);
+void				ft_get_signal(int code);
+t_exe				ft_dup_sortie(t_exe ex);
+int					ft_check_end_exe(t_exe ex);
+t_exe				ft_exe_pipe(t_exe ex);
+t_exe				ft_exe_no_pipe(t_exe ex);
+char				*ft_get_path(char *path);
+t_exe				ft_create_cmdpath(t_exe ex);
 
 #endif

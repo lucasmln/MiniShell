@@ -40,18 +40,28 @@ char		*ft_add_path(char *buf, int *i)
 int			ft_check_exit(char *buf)
 {
 	int		i;
+	int		nb;
 
-	if (!ft_strncmp(buf, "exit", 4))
+	nb = 0;
+	if ((!ft_strncmp(buf, "exit", 4) && !buf[4] )|| !ft_strncmp(buf, "exit ", 5))
 	{
-		i = 4;
-		if (!buf[i])
-			return (1);
+		i = 5;
+		while (buf[i] == ' ')
+			i++;
 		while (buf[i])
 		{
-			if (buf[i] != ' ')
-				return (0);
+			nb = ft_isdigit(buf[i]) ? 1 : nb;
+			if (!ft_isdigit(buf[i]))
+			{
+				ft_printf(1,
+				"minishell: exit: %s argument numérique nécessaire\n", &buf[5]);
+				g_shell.ret = 2;
+				return (1);
+			}
 			i++;
 		}
+		if (nb)
+			g_shell.ret = ft_atoi(&buf[5]);
 		return (1);
 	}
 	return (0);
@@ -62,7 +72,6 @@ int			ft_get_cmd(char *buf)
 	int		i;
 
 	i = 0;
-	g_shell.ret = 0;
 	while (buf[i] && buf[i] == ' ')
 		i++;
 	if (!ft_strncmp(&buf[i], "pwd", 3) ||
@@ -80,6 +89,8 @@ int			ft_get_cmd(char *buf)
 		ft_exe(&buf[i]);
 	ft_strdel(&buf);
 	g_shell.argv_empty ? ft_free_empty() : 0;
+	if (!ft_strncmp(g_shell.buf, "\n", ft_strlen(g_shell.buf)))
+		g_shell.ret = g_shell.save_ret;
 	return ((g_shell.ret));
 }
 
@@ -91,6 +102,8 @@ void		ft_get_signal(int code)
 	{
 		g_shell.dir = getcwd(g_shell.dir, BUF_SIZE);
 		i = ft_strlen(g_shell.dir);
+		g_shell.d_q = 0;
+		g_shell.s_q = 0;
 		while (i >= 0 && g_shell.dir[i] != '/')
 			i--;
 		ft_printf(1, "\n" BOLDGREEN "➜ " RESET BOLDCYAN " %s " RESET,
@@ -108,11 +121,12 @@ int			main(int ac, char **av, const char **env)
 		return (-1);
 	g_shell.fd = ft_init_fd_tab(g_shell.fd, 512);
 	signal(SIGINT, ft_get_signal);
-	signal(SIGQUIT, SIG_IGN);
+	signal(SIGQUIT, ft_get_signal);
 	while (1)
 	{
 		ft_print_prompt();
 		free(g_shell.save_buf);
 		g_shell.save_buf = NULL;
+		g_shell.save_ret = g_shell.ret;
 	}
 }
