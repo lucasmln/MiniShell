@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/22 14:49:46 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/25 12:20:37 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/10/01 11:01:54 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ char		*ft_multiligne_quote(char *buf, int s_quote, int d_quote, int i)
 	{
 		g_shell.s_q > 0 ? ft_printf(1, "quote> ") : ft_printf(1, "dquote> ");
 		ret = read(0, g_shell.buf, BUF_SIZE);
-		g_shell.buf[ret] = '\0';
+		g_shell.buf[ret - 1] = '\0';
 		k = 0;
 		while (g_shell.buf[k])
 		{
@@ -45,16 +45,11 @@ char		*ft_multiligne_quote(char *buf, int s_quote, int d_quote, int i)
 														g_shell.d_q + 1 : g_shell.d_q;
 			k++;
 		}
-		if (!g_shell.s_q && !g_shell.d_q)
-		{
-			ft_printf(1, "here\n");
-			ft_strdel(&buf);
-			return (ft_strdup(""));
-		}
 		if (!(buf = ft_str_add(buf, g_shell.buf)))
 			return (NULL);
 	}
-	return (buf);
+	ft_strdel(&buf);
+	return (ft_strdup(g_shell.buf));
 }
 
 void		ft_check_empty(char *buf)
@@ -127,8 +122,6 @@ char		*ft_check_quote(char *buf)
 	buf = g_shell.quote[0] ? ft_str_del_char(buf, g_shell.quote[0]) : buf;
 	ft_strdel(&g_shell.tmp);
 	ft_strdel(&save);
-	if (s_quote % 2 != 0 || d_quote % 2 != 0)
-		buf = ft_multiligne_quote(buf, s_quote, d_quote, i);
 	g_shell.quote_pos[g_shell.i_quote] = -1;
 	return (buf);
 }

@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 12:59:04 by jvaquer           #+#    #+#             */
-/*   Updated: 2020/09/25 16:15:23 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/10/01 12:14:54 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,12 +58,109 @@ int			ft_ispipe_is_ptvirgule(void)
 	return (ft_check_parse(tmp));
 }
 
+char		*ft_add_quote(char *s)
+{
+	char		*new;
+
+	if (!(new = malloc(sizeof(char) * 2)))
+		exit(-1000);
+	new[0] = 39;
+	new[1] = '\0';
+	s = ft_str_add(s, new);
+	new = ft_str_add(new, s);
+	return (new);
+}
+
+char		**ft_add_empty_quote(char **av)
+{
+	int			i;
+	int			k;
+	int			check;
+
+	i = -1;
+	while (av[++i])
+	{
+		k = -1;
+		check = 0;
+		while (av[i][++k])
+		{
+			if (av[i][k] != ' ')
+				check = 1;
+		}
+		if (!check)
+			ft_add_quote(av[i]);
+	}
+	return(av);
+}
+
+char		**ft_clean_av(char **av, int pos)
+{
+	int		i;
+	int		k;
+	char	**new;
+
+	i = 0;
+	while (av[i])
+		i++;
+	if (!(new = malloc(sizeof(char *) * (i + 1))))
+		exit(-1000);
+	i = 0;
+	k = 0;
+	while (av[i])
+	{
+		if (i + 1 == pos && i > 0)
+		{
+			ft_printf(1, "hey, av = %s\n", av[i]);
+			new[k] = ft_strdup(av[i]);
+			new[k] = ft_str_add(new[k], av[++i]);
+			k++;
+			i++;
+		}
+		else
+			new[k++] = ft_strdup(av[i++]);
+	}
+	new[k] = NULL;
+	int j = -1;
+	while (new[++j])
+		ft_printf(1, "new[%d]= %s, len = %d\n", j, new[j], ft_strlen(new[j]));
+	return (new);
+}
+
 int			ft_ex_2(t_exe ex)
 {
+	int i;
+//	int	k;
+
 	ex.argv = ft_split(ex.buf, ' ');
 	ex.argv = ft_check_input(ex.argv, ex.in);
-	if (ft_strncmp(ex.buf, "/bin/echo", 9))
-		ex.argv = ft_add_empty(ex.argv);
+	ex.argv = ft_add_empty(ex.argv);
+	if (!ft_strncmp(ex.buf, "/bin/echo", 9))
+	{
+		ex.buf = ft_str_del_char(ex.buf, g_shell.quote[0]);
+		ft_printf(1, "buf = %s\n", ex.buf);
+		i = -1;
+		while (ex.argv[++i])
+			ft_printf(1, "|%s|\n", ex.argv[i]);
+		i = -1;
+		while (ex.argv[++i])
+			ex.argv[i] = ft_str_del_char(ex.argv[i], g_shell.quote[0]);
+/*		while (ex.argv[i])
+		{
+			k = 0;
+			while (ex.argv[i][k])
+			{
+				if (ex.argv[i][k] != ' ')
+					break;
+				k++;
+			}
+			ft_printf(1, "k = %d\n", k);
+			if (!ex.argv[i][k])
+				ex.argv = ft_clean_av(ex.argv, i);
+			i++;
+		}
+*/	}
+	else
+		ex.argv = ft_add_empty_quote(ex.argv);
 	if (g_shell.save_pipfd[0] > 0 || g_shell.nb_input > 0)
 		ft_add_input(ex.in, ex.fd);
 	ex.i = -1;

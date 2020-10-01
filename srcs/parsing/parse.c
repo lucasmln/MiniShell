@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 12:54:22 by jvaquer           #+#    #+#             */
-/*   Updated: 2020/09/25 15:59:50 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/10/01 11:41:40 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,47 @@
 
 char		*ft_set_check_parse(char *buf)
 {
+	char		*tmp;
+	int			i;
+	int			count;
+
 	g_shell.save = -1;
 	g_shell.pip = -1;
 	g_shell.fd = ft_init_fd_tab(g_shell.fd, 512);
 	if (buf[ft_strlen(buf) - 1] == '\n')
 		buf[ft_strlen(buf) - 1] = '\0';
+	tmp = ft_strdup(buf);
 	buf = ft_check_quote(buf);
 	g_shell.i_quote = 0;
+	i = 0;
+	while (buf[i] == ' ')
+		i++;
+	if (!ft_strncmp(&buf[i], "echo", 4))
+	{
+		i = -1;
+		g_shell.pip = -1;
+		g_shell.save = -1;
+		count = 0;
+		while (tmp[++i])
+		{
+			if (tmp[i] == g_shell.quote[0])
+				count++;
+			if (count % 2 == 0 && (tmp[i] == '|' || tmp[i] == ';'))
+				break ;
+		}
+		g_shell.pip = tmp[i] == '|' ? i : -1;;
+		g_shell.save = tmp[i] == ';' ? i : -1;;
+		if (g_shell.pip != -1 || g_shell.save != -1)
+		{
+			tmp[i] = '\0';
+			g_shell.save_buf = ft_str_add(ft_strdup(tmp), &tmp[g_shell.pip != -1 ?
+				g_shell.pip + 1: g_shell.save + 1]);
+			g_shell.save = g_shell.save != -1 ? i : -1;
+			g_shell.pip = g_shell.pip != -1 ? i : -1;
+		}
+		ft_strdel(&buf);
+		return (tmp);
+	}
 	return (buf);
 }
 
@@ -55,8 +89,6 @@ int			ft_check_parse(char *buf)
 	i = 0;
 	while (buf[i] == ' ')
 		i++;
-	if (!ft_strncmp(&buf[i], "echo", 4) && g_shell.quote[0])
-		buf = ft_str_del_char(buf, g_shell.quote[0]);
 	buf = ft_dollars(buf);
 	return (ft_get_cmd(buf));
 }
