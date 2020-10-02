@@ -109,7 +109,7 @@ char		*ft_check_quote(char *buf)
 	ft_init_quote(&i, &d_quote, &s_quote);
 	save = ft_strdup(buf);
 	ft_loop_quote(buf, &i, &s_quote, &d_quote);
-	buf = g_shell.quote[0] ? ft_str_del_char(buf, g_shell.quote[0]) : buf;
+//	buf = g_shell.quote[0] ? ft_str_del_char(buf, g_shell.quote[0]) : buf;
 	i = ft_strlen(buf);
 	if (g_shell.pip != -1 || g_shell.save != -1)
 	{
@@ -119,7 +119,7 @@ char		*ft_check_quote(char *buf)
 		g_shell.pip = g_shell.pip != -1 ? i : -1;
 		buf = ft_strdup(g_shell.tmp);
 	}
-	buf = g_shell.quote[0] ? ft_str_del_char(buf, g_shell.quote[0]) : buf;
+//	buf = g_shell.quote[0] ? ft_str_del_char(buf, g_shell.quote[0]) : buf;
 	ft_strdel(&g_shell.tmp);
 	ft_strdel(&save);
 	g_shell.quote_pos[g_shell.i_quote] = -1;

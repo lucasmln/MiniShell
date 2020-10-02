@@ -66,7 +66,8 @@ int			ft_find_var(char **env, char *var, char c)
 			k++;
 		c = env[i][k];
 		env[i][k] = '\0';
-		if (!ft_strncmp(env[i], var, ft_strlen(env[i])))
+		if (!ft_strncmp(env[i], var, (ft_strlen(env[i]) > ft_strlen(var) ?
+										ft_strlen(env[i]) : ft_strlen(var))))
 		{
 			env[i][k] = c;
 			return (i);

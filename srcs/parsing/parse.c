@@ -89,7 +89,7 @@ int			ft_check_parse(char *buf)
 	i = 0;
 	while (buf[i] == ' ')
 		i++;
-	buf = ft_dollars(buf);
+//	buf = ft_dollars(buf);
 	return (ft_get_cmd(buf));
 }
 

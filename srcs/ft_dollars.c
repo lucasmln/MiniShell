@@ -45,15 +45,24 @@ char		*ft_dollars(char *buf)
 {
 	int		i;
 	int		save;
+	int		check;
 	char	*new;
 
 	i = 0;
 	if (!(new = malloc(sizeof(char) * 1)))
 		return (NULL);
 	new[0] = '\0';
+	check = 0;
 	while (buf[i])
 	{
-		if (buf[i] == '$')
+		if (buf[i] == 39)
+		{
+			check = check == 0 ? 1 : 0;
+			i++;
+			if (!buf[i])
+				break ;
+		}
+		if (buf[i] == '$' && check == 0)
 			new = ft_dollars_2(&i, new, buf, save);
 		else
 		{

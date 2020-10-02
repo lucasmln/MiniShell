@@ -245,7 +245,7 @@ int					ft_check_parse(char *buf);
 
 int					ft_ex_2(t_exe ex);
 int					ft_exe(char *buf);
-
+char				*ft_del_quote_av0(char *buf);
 void				ft_get_signal(int code);
 t_exe				ft_dup_sortie(t_exe ex);
 int					ft_check_end_exe(t_exe ex);
