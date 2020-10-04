@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 12:48:17 by jvaquer           #+#    #+#             */
-/*   Updated: 2020/09/25 12:49:46 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/10/04 16:19:50 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,28 @@ char		*ft_dollars_2(int *i, char *new, char *buf, int save)
 	return (new);
 }
 
+int			ft_check_dollar(char *buf, int *i, int *check)
+{
+	if (buf[*i] == 39)
+	{
+		*check = *check == 0 ? 1 : 0;
+		*i += 1;
+		if (!buf[*i])
+			return (0);
+	}
+	return (1);
+}
+
+char		*ft_dollars_utils(char *buf, int save, char *new, int *i)
+{
+	save = buf[*i + 1];
+	buf[*i + 1] = '\0';
+	new = ft_str_add(new, &buf[*i]);
+	buf[*i + 1] = save;
+	*i += 1;
+	return (new);
+}
+
 char		*ft_dollars(char *buf)
 {
 	int		i;
@@ -49,32 +71,20 @@ char		*ft_dollars(char *buf)
 	char	*new;
 
 	i = 0;
-	if (!(new = malloc(sizeof(char) * 1)))
-		return (NULL);
-	new[0] = '\0';
 	check = 0;
+	if (!(new = malloc(sizeof(char) * 1)))
+		exit(-1000);
+	new[0] = '\0';
 	while (buf[i])
 	{
-		if (buf[i] == 39)
-		{
-			check = check == 0 ? 1 : 0;
-			i++;
-			if (!buf[i])
-				break ;
-		}
+		if (!ft_check_dollar(buf, &i, &check))
+			break ;
 		if (buf[i] == '$' && check == 0)
 			new = ft_dollars_2(&i, new, buf, save);
 		else
-		{
-			save = buf[i + 1];
-			buf[i + 1] = '\0';
-			new = ft_str_add(new, &buf[i]);
-			buf[i + 1] = save;
-			i++;
-		}
+			new = ft_dollars_utils(buf, save, new, &i);
 	}
 	g_shell.tmp = NULL;
-	free(buf);
-	buf = NULL;
+	ft_strdel(&buf);
 	return (new);
 }
