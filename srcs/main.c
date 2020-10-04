@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/10/01 10:28:48 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/10/04 16:36:30 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,21 +42,20 @@ int			ft_check_exit(char *buf)
 	int		i;
 	int		nb;
 
-	nb = 0;
-	if ((!ft_strncmp(buf, "exit", 4) && !buf[4] )|| !ft_strncmp(buf, "exit ", 5))
+	if ((!ft_strncmp(buf, "exit", 4) &&
+									!buf[4]) || !ft_strncmp(buf, "exit ", 5))
 	{
 		i = 5;
 		while (buf[i] == ' ')
 			i++;
 		while (buf[i])
 		{
-			nb = ft_isdigit(buf[i]) ? 1 : nb;
+			nb = ft_isdigit(buf[i]) ? 1 : 0;
 			if (!ft_isdigit(buf[i]))
 			{
 				ft_printf(1,
 				"minishell: exit: %s argument numérique nécessaire\n", &buf[5]);
-				g_shell.ret = 2;
-				return (1);
+				return ((g_shell.ret = 2) - 1);
 			}
 			i++;
 		}

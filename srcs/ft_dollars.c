@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 12:48:17 by jvaquer           #+#    #+#             */
-/*   Updated: 2020/10/04 16:19:50 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/10/04 16:38:00 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ char		*ft_dollars(char *buf)
 		if (!ft_check_dollar(buf, &i, &check))
 			break ;
 		if (buf[i] == '$' && check == 0)
-			new = ft_dollars_2(&i, new, buf, save);
+			new = ft_dollars_2(&i, new, buf, (save = 0));
 		else
 			new = ft_dollars_utils(buf, save, new, &i);
 	}
