@@ -6,17 +6,50 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 12:54:22 by jvaquer           #+#    #+#             */
-/*   Updated: 2020/10/01 11:41:40 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/10/04 18:07:30 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
+char		*ft_set_check_parse_utile(char *tmp, int i)
+{
+	if (g_shell.pip != -1 || g_shell.save != -1)
+	{
+		tmp[i] = '\0';
+		g_shell.save_buf = ft_str_add(ft_strdup(tmp),
+				&tmp[g_shell.pip != -1 ? g_shell.pip + 1 : g_shell.save + 1]);
+		g_shell.save = g_shell.save != -1 ? i : -1;
+		g_shell.pip = g_shell.pip != -1 ? i : -1;
+	}
+	ft_printf(1, "here : %s, save = %d\n", g_shell.save_buf, g_shell.save);
+	return (tmp);
+}
+
+char		*ft_set_parse_echo(char *buf, char *tmp, int i)
+{
+	int		count;
+
+	i = -1;
+	count = 0;
+	while (tmp[++i])
+	{
+		if (tmp[i] == g_shell.quote[0])
+			count++;
+		if (count % 2 == 0 && (tmp[i] == '|' || tmp[i] == ';'))
+			break ;
+	}
+	g_shell.pip = tmp[i] == '|' ? i : -1;
+	g_shell.save = tmp[i] == ';' ? i : -1;
+	tmp = ft_set_check_parse_utile(tmp, i);
+	ft_strdel(&buf);
+	return (tmp);
+}
+
 char		*ft_set_check_parse(char *buf)
 {
 	char		*tmp;
 	int			i;
-	int			count;
 
 	g_shell.save = -1;
 	g_shell.pip = -1;
@@ -30,31 +63,7 @@ char		*ft_set_check_parse(char *buf)
 	while (buf[i] == ' ')
 		i++;
 	if (!ft_strncmp(&buf[i], "echo", 4))
-	{
-		i = -1;
-		g_shell.pip = -1;
-		g_shell.save = -1;
-		count = 0;
-		while (tmp[++i])
-		{
-			if (tmp[i] == g_shell.quote[0])
-				count++;
-			if (count % 2 == 0 && (tmp[i] == '|' || tmp[i] == ';'))
-				break ;
-		}
-		g_shell.pip = tmp[i] == '|' ? i : -1;;
-		g_shell.save = tmp[i] == ';' ? i : -1;;
-		if (g_shell.pip != -1 || g_shell.save != -1)
-		{
-			tmp[i] = '\0';
-			g_shell.save_buf = ft_str_add(ft_strdup(tmp), &tmp[g_shell.pip != -1 ?
-				g_shell.pip + 1: g_shell.save + 1]);
-			g_shell.save = g_shell.save != -1 ? i : -1;
-			g_shell.pip = g_shell.pip != -1 ? i : -1;
-		}
-		ft_strdel(&buf);
-		return (tmp);
-	}
+		return (ft_set_parse_echo(buf, tmp, i));
 	return (buf);
 }
 
@@ -89,7 +98,6 @@ int			ft_check_parse(char *buf)
 	i = 0;
 	while (buf[i] == ' ')
 		i++;
-//	buf = ft_dollars(buf);
 	return (ft_get_cmd(buf));
 }
 

@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/22 14:49:46 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/10/01 11:01:54 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/10/04 17:49:11 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,36 +20,6 @@ void		ft_init_quote(int *i, int *d_quote, int *s_quote)
 	*d_quote = 0;
 	*s_quote = 0;
 	*i = -1;
-}
-
-char		*ft_multiligne_quote(char *buf, int s_quote, int d_quote, int i)
-{
-	int		k;
-	int		ret;
-
-	g_shell.s_q = s_quote;
-	g_shell.d_q = d_quote;
-	while (g_shell.s_q % 2 != 0 || g_shell.d_q % 2 != 0)
-	{
-		g_shell.s_q > 0 ? ft_printf(1, "quote> ") : ft_printf(1, "dquote> ");
-		ret = read(0, g_shell.buf, BUF_SIZE);
-		g_shell.buf[ret - 1] = '\0';
-		k = 0;
-		while (g_shell.buf[k])
-		{
-			if (g_shell.buf[k] == g_shell.quote[0])
-				g_shell.quote_pos[g_shell.i_quote++] = i + k;
-			g_shell.s_q = g_shell.buf[k] == S_QUOTE && S_QUOTE == g_shell.quote[0] ?
-								g_shell.s_q + 1 : g_shell.s_q;
-			g_shell.d_q = g_shell.buf[k] == '"' && '"' == g_shell.quote[0] ?
-														g_shell.d_q + 1 : g_shell.d_q;
-			k++;
-		}
-		if (!(buf = ft_str_add(buf, g_shell.buf)))
-			return (NULL);
-	}
-	ft_strdel(&buf);
-	return (ft_strdup(g_shell.buf));
 }
 
 void		ft_check_empty(char *buf)
@@ -109,7 +79,6 @@ char		*ft_check_quote(char *buf)
 	ft_init_quote(&i, &d_quote, &s_quote);
 	save = ft_strdup(buf);
 	ft_loop_quote(buf, &i, &s_quote, &d_quote);
-//	buf = g_shell.quote[0] ? ft_str_del_char(buf, g_shell.quote[0]) : buf;
 	i = ft_strlen(buf);
 	if (g_shell.pip != -1 || g_shell.save != -1)
 	{
@@ -119,7 +88,6 @@ char		*ft_check_quote(char *buf)
 		g_shell.pip = g_shell.pip != -1 ? i : -1;
 		buf = ft_strdup(g_shell.tmp);
 	}
-//	buf = g_shell.quote[0] ? ft_str_del_char(buf, g_shell.quote[0]) : buf;
 	ft_strdel(&g_shell.tmp);
 	ft_strdel(&save);
 	g_shell.quote_pos[g_shell.i_quote] = -1;

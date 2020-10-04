@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 12:59:04 by jvaquer           #+#    #+#             */
-/*   Updated: 2020/10/04 16:20:32 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/10/04 18:43:09 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,57 +71,6 @@ char		*ft_add_quote(char *s)
 	return (new);
 }
 
-char		**ft_add_empty_quote(char **av)
-{
-	int			i;
-	int			k;
-	int			check;
-
-	i = -1;
-	while (av[++i])
-	{
-		k = -1;
-		check = 0;
-		while (av[i][++k])
-		{
-			if (av[i][k] != ' ')
-				check = 1;
-		}
-		if (!check)
-			ft_add_quote(av[i]);
-	}
-	return(av);
-}
-
-char		**ft_clean_av(char **av, int pos)
-{
-	int		i;
-	int		k;
-	char	**new;
-
-	i = 0;
-	while (av[i])
-		i++;
-	if (!(new = malloc(sizeof(char *) * (i + 1))))
-		exit(-1000);
-	i = 0;
-	k = 0;
-	while (av[i])
-	{
-		if (i + 1 == pos && i > 0)
-		{
-			new[k] = ft_strdup(av[i]);
-			new[k] = ft_str_add(new[k], av[++i]);
-			k++;
-			i++;
-		}
-		else
-			new[k++] = ft_strdup(av[i++]);
-	}
-	new[k] = NULL;
-	return (new);
-}
-
 void		ft_pass_word(char *buf, int *i, int *count, char c)
 {
 	*i += 1;
@@ -180,7 +129,7 @@ char		*ft_create_word(char *buf, int *i, char c)
 			t = buf[*i + len];
 		}
 		if (check == 0 && buf[*i + len] == ' ')
-			break;
+			break ;
 		len++;
 	}
 	if (!(new = malloc(sizeof(char) * (len + 1))))
@@ -226,9 +175,9 @@ int			ft_len_without_quote(char *buf)
 	int		i;
 	char	c;
 
-	i = 0;
+	i = -1;
 	len = 0;
-	while (buf[i])
+	while (buf[++i])
 	{
 		if (buf[i] == '"' || buf[i] == 39)
 		{
@@ -239,13 +188,9 @@ int			ft_len_without_quote(char *buf)
 				i++;
 				len++;
 			}
-			i++;
 		}
 		else
-		{
 			len++;
-			i++;
-		}
 	}
 	return (len);
 }
@@ -328,7 +273,33 @@ int			ft_ex_2(t_exe ex)
 		return (ft_ispipe_is_ptvirgule());
 	return (1);
 }
+/*
+char		**ft_del_redir_av(char **av)
+{
+	int		i;
+	int		k;
+	char	**new;
 
+	i = 0;
+	while (av[i])
+		i++;
+	if (!(new = malloc(sizeof(char *) * (i + 1))))
+		exit(-1000);
+	i = 0;
+	k = 0;
+	while (av[i])
+	{
+		if (!ft_strncmp(av[i], ">", ft_strlen(av[i])))
+			i++;
+		else
+		{
+			new[k++] = av[i++];
+		}
+	}
+	new[k] = NULL;
+	return (new);
+}
+*/
 int			ft_exe(char *buf)
 {
 	t_exe			ex;
@@ -342,7 +313,10 @@ int			ft_exe(char *buf)
 	k = -1;
 	while (ex.argv[++k])
 		ex.argv[k] = ft_dollars(ex.argv[k]);
-	k = -1;
+//	ex.argv = ft_del_redir_av(ex.argv);
+//	k = -1;
+//	while (ex.argv[++k])
+//		ft_printf(1, "av = %s\n", ex.argv[k]);
 	ex.buf = ft_change_buf(ex.buf, ex.argv[0]);
 	ex = ft_set_fd_path(ex);
 	if (!ex.in)
