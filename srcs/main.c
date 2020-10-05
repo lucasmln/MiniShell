@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/10/04 16:36:30 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/10/05 18:10:16 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,11 @@ int			ft_check_exit(char *buf)
 		while (buf[i])
 		{
 			nb = ft_isdigit(buf[i]) ? 1 : 0;
+			if (buf[i] == ' ' && buf[i+1])
+			{
+				ft_printf(1, "minishell: too many arguments\n");
+				return (1);
+			}
 			if (!ft_isdigit(buf[i]))
 			{
 				ft_printf(1,
