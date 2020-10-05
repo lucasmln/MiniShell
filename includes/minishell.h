@@ -100,6 +100,12 @@ void				ft_free_empty(void);
 void				ft_pass_input(char *buf, int *i);
 
 /*
+ ** builtins.c
+*/
+
+void				ft_change_env_pwd(char *s);
+
+/*
  ** builtins_2.c
 */
 

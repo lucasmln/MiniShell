@@ -42,12 +42,14 @@ int			ft_cd_home(char *buf)
 	else
 	{
 		i = 0;
+		ft_change_env_pwd("OLDPWD=");
 		while (ft_strncmp(g_shell.env[i], "HOME", 4))
 			i++;
 		if (!g_shell.env[i])
 			ft_printf(1, "minishell: no HOME path\n");
 		else
 			chdir(&g_shell.env[i][5]);
+		ft_change_env_pwd("PWD=");
 	}
 	ft_free_empty();
 	if (g_shell.save != -1 || g_shell.pip != -1)
@@ -84,6 +86,49 @@ char		*ft_del_input(char *buf)
 	return (new);
 }
 
+int			ft_avchr(char **av, char *s)
+{
+	int		i;
+	int		k;
+	char	c;
+
+	i = 0;
+	while (av[i])
+	{
+		k = 0;
+		while (av[i][k] && av[i][k] != '=')
+			k++;
+		c = av[i][++k];
+		av[i][k] = '\0';
+		if (!ft_strncmp(av[i], s, ft_strlen(s)))
+		{
+			av[i][k] = c;
+			return (i);
+		}
+		av[i][k] = c;
+		i++;
+	}
+	return (-1);
+}
+
+void		ft_change_env_pwd(char *s)
+{
+	int		k;
+	char	*tmp;
+
+	tmp = NULL;
+	tmp = getcwd(tmp, 0);
+	k = ft_avchr(g_shell.env, s);
+	ft_strdel(&g_shell.env[k]);
+	g_shell.env[k] = ft_strdup(s);
+	g_shell.env[k] = ft_str_add(g_shell.env[k], tmp);
+	k = ft_avchr(g_shell.sort_env, s);
+	ft_strdel(&g_shell.sort_env[k]);
+	g_shell.sort_env[k] = ft_strdup(s);
+	g_shell.sort_env[k] = ft_str_add(g_shell.sort_env[k], tmp);
+	ft_strdel(&tmp);
+}
+
 int			ft_cd_2(int redir, char *buf)
 {
 	struct stat		info;
@@ -98,7 +143,11 @@ int			ft_cd_2(int redir, char *buf)
 	else if (g_shell.pip != -1)
 		;
 	else
+	{
+		ft_change_env_pwd("OLDPWD=");
 		chdir(g_shell.output);
+		ft_change_env_pwd("PWD=");
+	}
 	ft_strdel(&buf);
 	ft_strdel(&g_shell.output);
 	ft_free_empty();
