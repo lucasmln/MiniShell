@@ -11,9 +11,14 @@
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
+#include <sys/errno.h>
 
 void		ft_create_pipe(void)
 {
+	if (g_shell.pipe_fd[0])
+		close(g_shell.pipe_fd[0]);
+	if (g_shell.pipe_fd[1])
+		close(g_shell.pipe_fd[1]);
 	if (g_shell.pip != -1)
 	{
 		if (pipe(g_shell.pipe_fd) == -1)
@@ -83,7 +88,7 @@ t_exe		ft_exe_pipe(t_exe ex)
 		g_shell.pipe_fd[1] = 0;
 		if (g_shell.save_pipfd[0])
 			close(g_shell.save_pipfd[0]);
-		g_shell.save_pipfd[0] = g_shell.pipe_fd[0];
+		g_shell.save_pipfd[0] = dup(g_shell.pipe_fd[0]);
 	}
 	return (ex);
 }

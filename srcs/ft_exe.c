@@ -51,9 +51,6 @@ int			ft_ispipe_is_ptvirgule(void)
 {
 	char	*tmp;
 
-	int		k = -1;
-	while (g_shell.fd[++k] != -2)
-		ft_printf(1, "fd = %d\n", g_shell.fd[k]);
 	tmp = g_shell.save != -1 ? ft_strdup(&g_shell.save_buf[g_shell.save + 1]) :
 								ft_strdup(&g_shell.save_buf[g_shell.pip + 1]);
 	free(g_shell.save_buf);
