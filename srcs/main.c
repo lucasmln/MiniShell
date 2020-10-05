@@ -52,13 +52,13 @@ int			ft_check_exit(char *buf)
 		while (buf[i])
 		{
 			nb = ft_isdigit(buf[i]) ? 1 : 0;
-			if (buf[i] == ' ' && buf[i+1] != ' ')
+			if (buf[i] == ' ' && buf[i + 1] != ' ' && buf[i + 1])
 			{
 				ft_printf(1, "minishell: too many arguments\n");
 				g_shell.legal_exit = 1;
 				return ((g_shell.ret = 1) - 1);
 			}
-			if (!ft_isdigit(buf[i]))
+			if (!ft_isdigit(buf[i]) && buf[i] != ' ')
 			{
 				ft_printf(1,
 				"minishell: exit: %s argument numérique nécessaire\n", &buf[5]);
