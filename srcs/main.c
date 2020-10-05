@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/10/05 18:10:16 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/10/05 18:38:24 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ int			ft_check_exit(char *buf)
 	int		i;
 	int		nb;
 
+	g_shell.legal_exit = 0;
 	if ((!ft_strncmp(buf, "exit", 4) &&
 									!buf[4]) || !ft_strncmp(buf, "exit ", 5))
 	{
@@ -51,10 +52,11 @@ int			ft_check_exit(char *buf)
 		while (buf[i])
 		{
 			nb = ft_isdigit(buf[i]) ? 1 : 0;
-			if (buf[i] == ' ' && buf[i+1])
+			if (buf[i] == ' ' && buf[i+1] != ' ')
 			{
 				ft_printf(1, "minishell: too many arguments\n");
-				return (1);
+				g_shell.legal_exit = 1;
+				return ((g_shell.ret = 1) - 1);
 			}
 			if (!ft_isdigit(buf[i]))
 			{
@@ -89,7 +91,7 @@ int			ft_get_cmd(char *buf)
 		g_shell.ret = ft_unset(&buf[i + ft_strlen("unset")]);
 	else if (ft_check_exit(&buf[i]))
 		ft_free_exit(buf, 0);
-	else
+	else if (!g_shell.legal_exit)
 		ft_exe(&buf[i]);
 	ft_strdel(&buf);
 	g_shell.argv_empty ? ft_free_empty() : 0;

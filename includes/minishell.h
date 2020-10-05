@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/18 10:37:57 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/30 12:36:24 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/10/05 18:37:33 by jvaquer          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ typedef struct		s_minishell
 	char	c;
 	int		ret;
 	int		save_ret;
+	int		legal_exit;
 }					t_minishell;
 
 typedef struct		s_exe
