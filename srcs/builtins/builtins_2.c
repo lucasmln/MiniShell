@@ -22,10 +22,10 @@ int			ft_get_var_4(int *i)
 														++g_shell.len_exp, *i);
 	g_shell.env = ft_add_var(g_shell.env, g_shell.output,
 														++g_shell.len_env, *i);
-	if (ft_find_var(g_shell.sort_env,
+	if (ft_find_var_export(g_shell.sort_env,
 			g_shell.sort_env[g_shell.len_exp - 1], '=') != g_shell.len_exp - 1)
 		ft_change_var(g_shell.sort_env, g_shell.len_exp);
-	if (ft_find_var(g_shell.env,
+	if (ft_find_var_export(g_shell.env,
 				g_shell.env[g_shell.len_env - 1], '=') != g_shell.len_env - 1)
 		ft_change_var(g_shell.env, g_shell.len_env);
 	else
@@ -49,10 +49,10 @@ int			ft_get_var_3(int *i)
 					ft_str_add(g_shell.env[g_shell.len_env - 1], "=");
 	g_shell.sort_env[g_shell.len_exp - 1] =
 					ft_str_add(g_shell.sort_env[g_shell.len_exp - 1], "=''");
-	if (ft_find_var(g_shell.sort_env,
+	if (ft_find_var_export(g_shell.sort_env,
 			g_shell.sort_env[g_shell.len_exp - 1], '=') != g_shell.len_exp - 1)
 		ft_change_var(g_shell.sort_env, g_shell.len_exp);
-	if (ft_find_var(g_shell.env,
+	if (ft_find_var_export(g_shell.env,
 				g_shell.env[g_shell.len_env - 1], '=') != g_shell.len_env - 1)
 		ft_change_var(g_shell.env, g_shell.len_env);
 	else

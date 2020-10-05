@@ -22,7 +22,6 @@ char		*ft_set_check_parse_utile(char *tmp, int i)
 		g_shell.save = g_shell.save != -1 ? i : -1;
 		g_shell.pip = g_shell.pip != -1 ? i : -1;
 	}
-	ft_printf(1, "here : %s, save = %d\n", g_shell.save_buf, g_shell.save);
 	return (tmp);
 }
 

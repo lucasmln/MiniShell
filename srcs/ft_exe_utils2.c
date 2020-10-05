@@ -44,11 +44,11 @@ t_exe			ft_free_exe(t_exe ex)
 	if (ex.binary)
 		free(ex.binary);
 	ex.binary = NULL;
-	free(ex.in);
-	ex.in = 0;
 	ft_strdel(&ex.buf);
 	free(g_shell.argv_empty);
 	g_shell.argv_empty = NULL;
+	free(ex.in);
+	ex.in = 0;
 	return (ex);
 }
 

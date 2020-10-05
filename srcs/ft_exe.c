@@ -51,6 +51,9 @@ int			ft_ispipe_is_ptvirgule(void)
 {
 	char	*tmp;
 
+	int		k = -1;
+	while (g_shell.fd[++k] != -2)
+		ft_printf(1, "fd = %d\n", g_shell.fd[k]);
 	tmp = g_shell.save != -1 ? ft_strdup(&g_shell.save_buf[g_shell.save + 1]) :
 								ft_strdup(&g_shell.save_buf[g_shell.pip + 1]);
 	free(g_shell.save_buf);
@@ -273,7 +276,7 @@ int			ft_ex_2(t_exe ex)
 		return (ft_ispipe_is_ptvirgule());
 	return (1);
 }
-/*
+
 char		**ft_del_redir_av(char **av)
 {
 	int		i;
@@ -290,16 +293,21 @@ char		**ft_del_redir_av(char **av)
 	while (av[i])
 	{
 		if (!ft_strncmp(av[i], ">", ft_strlen(av[i])))
-			i++;
-		else
 		{
-			new[k++] = av[i++];
+			ft_strdel(&av[i]);
+			if (av[++i])
+			{
+				ft_strdel(&av[i]);
+				i++;
+			}
 		}
+		else
+			new[k++] = av[i++];
 	}
 	new[k] = NULL;
 	return (new);
 }
-*/
+
 int			ft_exe(char *buf)
 {
 	t_exe			ex;
@@ -313,10 +321,6 @@ int			ft_exe(char *buf)
 	k = -1;
 	while (ex.argv[++k])
 		ex.argv[k] = ft_dollars(ex.argv[k]);
-//	ex.argv = ft_del_redir_av(ex.argv);
-//	k = -1;
-//	while (ex.argv[++k])
-//		ft_printf(1, "av = %s\n", ex.argv[k]);
 	ex.buf = ft_change_buf(ex.buf, ex.argv[0]);
 	ex = ft_set_fd_path(ex);
 	if (!ex.in)

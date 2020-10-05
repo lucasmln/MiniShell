@@ -86,7 +86,6 @@ int			ft_get_cmd(char *buf)
 		ft_free_exit(buf, 0);
 	else
 		ft_exe(&buf[i]);
-	ft_printf(1, "ici\n");
 	ft_strdel(&buf);
 	g_shell.argv_empty ? ft_free_empty() : 0;
 	if (!ft_strncmp(g_shell.buf, "\n", ft_strlen(g_shell.buf)))

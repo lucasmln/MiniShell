@@ -53,6 +53,36 @@ void		ft_del_var(char **env, int len)
 	}
 }
 
+int			ft_find_var_export(char **env, char *var, char c)
+{
+	int		i;
+	int		k;
+	char	*save;
+
+	i = 0;
+	save = ft_strdup(var);
+	while (save[i] != c)
+		i++;
+	save[i] = '\0';
+	i = 0;
+	while (env[i])
+	{
+		k = 0;
+		while (env[i][k] != c)
+			k++;
+		env[i][k] = '\0';
+		if (!ft_strncmp(env[i], save, ft_strlen(save)))
+		{
+			ft_strdel(&save);
+			env[i][k] = c;
+			return (i);
+		}
+		env[i][k] = c;
+		i++;
+	}
+	return (i);
+}
+
 int			ft_find_var(char **env, char *var, char c)
 {
 	int		i;

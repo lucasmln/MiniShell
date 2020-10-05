@@ -21,7 +21,7 @@ int			ft_get_var_6(int *i)
 												++g_shell.len_exp, *i);
 	g_shell.sort_env[g_shell.len_exp - 1] =
 		ft_str_add(g_shell.sort_env[g_shell.len_exp - 1], "=''");
-	if (ft_find_var(g_shell.sort_env,
+	if (ft_find_var_export(g_shell.sort_env,
 	g_shell.sort_env[g_shell.len_exp - 1], '=') != g_shell.len_exp - 1)
 		ft_del_var(g_shell.sort_env, (g_shell.len_exp -= 1));
 	if (!k)

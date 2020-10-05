@@ -99,6 +99,12 @@ void				ft_free_empty(void);
 void				ft_pass_input(char *buf, int *i);
 
 /*
+ ** builtins_2.c
+*/
+
+int					ft_find_var_export(char **env, char *var, char c);
+
+/*
  ** manip_str.c
 */
 
@@ -253,5 +259,11 @@ t_exe				ft_exe_pipe(t_exe ex);
 t_exe				ft_exe_no_pipe(t_exe ex);
 char				*ft_get_path(char *path);
 t_exe				ft_create_cmdpath(t_exe ex);
+
+/*
+ ** ft_exe_utils3.c
+*/
+
+char				**ft_del_redir_av(char **buf);
 
 #endif

@@ -25,11 +25,14 @@ void		ft_add_input(int *in, int *fd)
 	{
 		close(fd[0]);
 		while (++k < g_shell.nb_input)
+		{
 			while ((ret = read(in[k], buf, BUF_SIZE)))
 			{
 				buf[ret] = '\0';
 				write(fd[1], buf, ret);
 			}
+			close(in[k]);
+		}
 		close(fd[1]);
 		exit(0);
 	}
@@ -51,6 +54,7 @@ t_exe		ft_set_fd_path(t_exe ex)
 	g_shell.fd = ft_check_redir(ft_strdup(ex.buf), g_shell.fd);
 	if (g_shell.fd[0] != -2)
 		ex.buf = ft_del_redir(ex.buf);
+	ex.argv = ft_del_redir_av(ex.argv);
 	g_shell.fd[0] = g_shell.fd[0] == -2 ? 1 : g_shell.fd[0];
 	while (g_shell.sort_env[ex.i] &&
 								ft_strncmp(g_shell.sort_env[ex.i], "PATH=", 5))
