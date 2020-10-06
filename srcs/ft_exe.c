@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 12:59:04 by jvaquer           #+#    #+#             */
-/*   Updated: 2020/10/06 11:01:06 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/10/06 12:01:39 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ t_exe		ft_loop_exe(t_exe ex)
 	if (!stat(ex.cmd_path, &ex.info))
 	{
 		ex.i = 0;
-		ft_printf(1, "fd = %d, ex.i = %d\n", g_shell.nb_fd, ex.i);
 		while (g_shell.pip == -1 && (ex.i < g_shell.nb_fd ||
 					(g_shell.nb_fd == 0 && ex.i == 0)))
 			ex = ft_exe_no_pipe(ex);
@@ -56,6 +55,7 @@ int			ft_ispipe_is_ptvirgule(void)
 								ft_strdup(&g_shell.save_buf[g_shell.pip + 1]);
 	free(g_shell.save_buf);
 	g_shell.save_buf = NULL;
+	g_shell.i_pip = g_shell.pip != -1 ? g_shell.i_pip + 1 : 0;
 	return (ft_check_parse(tmp));
 }
 

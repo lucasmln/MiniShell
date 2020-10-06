@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 15:14:36 by jvaquer           #+#    #+#             */
-/*   Updated: 2020/10/06 10:55:55 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/10/06 12:03:09 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,16 +15,16 @@
 
 void		ft_create_pipe(void)
 {
-	if (g_shell.pipe_fd[0])
-		close(g_shell.pipe_fd[0]);
-	if (g_shell.pipe_fd[1])
-		close(g_shell.pipe_fd[1]);
+	if (g_shell.pipe_fd[g_shell.i_pip][0])
+		close(g_shell.pipe_fd[g_shell.i_pip][0]);
+	if (g_shell.pipe_fd[g_shell.i_pip][1])
+		close(g_shell.pipe_fd[g_shell.i_pip][1]);
 	if (g_shell.pip != -1)
 	{
-		if (pipe(g_shell.pipe_fd) == -1)
+		if (pipe(g_shell.pipe_fd[g_shell.i_pip]) == -1)
 			exit(ft_printf(1, "minishell: pipe: error call function\n"));
-		if (!g_shell.save_pipfd[0])
-			g_shell.save_pipfd[0] = dup(g_shell.pipe_fd[0]);
+//		if (!g_shell.save_pipfd[0])
+//			g_shell.save_pipfd[0] = dup(g_shell.pipe_fd[0]);
 	}
 }
 
@@ -71,6 +71,8 @@ t_exe		ft_exe_pipe(t_exe ex)
 	{
 		close(g_shell.pipe_fd[0]);
 		dup2(g_shell.pipe_fd[1], STDOUT_FILENO);
+		if (g_shell.fd[g_shell.nb_fd - 1] > 0)
+			dup2(g_shell.fd[g_shell.nb_fd - 1], STDOUT_FILENO);
 		if (g_shell.save_pipfd[0])
 			dup2(g_shell.save_pipfd[0], STDIN_FILENO);
 		if (ex.binary && !stat(ex.binary, &ex.info))

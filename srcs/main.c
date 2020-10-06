@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 15:37:39 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/10/05 18:38:24 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/10/06 12:00:43 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,7 @@ int			main(int ac, char **av, const char **env)
 	signal(SIGQUIT, ft_get_signal);
 	while (1)
 	{
+		g_shell.i_pip = 0;
 		ft_print_prompt();
 		free(g_shell.save_buf);
 		g_shell.save_buf = NULL;
