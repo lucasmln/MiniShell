@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 15:38:19 by jvaquer           #+#    #+#             */
-/*   Updated: 2020/10/04 18:22:49 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/10/06 10:52:54 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,13 @@ t_exe		ft_set_fd_path(t_exe ex)
 	ex.i = 0;
 	g_shell.fd = ft_check_redir(ft_strdup(ex.buf), g_shell.fd);
 	if (g_shell.fd[0] != -2)
+	{
 		ex.buf = ft_del_redir(ex.buf);
+	}
 	ex.argv = ft_del_redir_av(ex.argv);
+	int		k = -1;
+	while (ex.argv[++k])
+		ft_printf(1, "av = %s\n", ex.argv[k]);
 	g_shell.fd[0] = g_shell.fd[0] == -2 ? 1 : g_shell.fd[0];
 	while (g_shell.sort_env[ex.i] &&
 								ft_strncmp(g_shell.sort_env[ex.i], "PATH=", 5))

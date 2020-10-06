@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/22 15:23:49 by lmoulin           #+#    #+#             */
-/*   Updated: 2020/09/25 12:41:08 by jvaquer          ###   ########.fr       */
+/*   Updated: 2020/10/06 10:29:18 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ char		*ft_del_redir(char *buf)
 	while (buf[i])
 		if (buf[i] == '>')
 		{
+			ft_printf(1, "i = %d\n", i);
 			i = buf[i + 1] == '>' ? i + 2 : i + 1;
 			while (buf[i] == ' ')
 				i++;
@@ -48,6 +49,7 @@ char		*ft_del_redir(char *buf)
 				i++;
 			while (buf[i] == ' ')
 				i++;
+			ft_printf(1, "i = %d\n", i);
 		}
 		else
 			new[k++] = buf[i++];

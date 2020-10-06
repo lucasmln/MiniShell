@@ -6,7 +6,7 @@
 /*   By: jvaquer <jvaquer@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 12:59:04 by jvaquer           #+#    #+#             */
-/*   Updated: 2020/10/04 18:43:09 by lmoulin          ###   ########.fr       */
+/*   Updated: 2020/10/06 11:01:06 by lmoulin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ t_exe		ft_loop_exe(t_exe ex)
 	if (!stat(ex.cmd_path, &ex.info))
 	{
 		ex.i = 0;
+		ft_printf(1, "fd = %d, ex.i = %d\n", g_shell.nb_fd, ex.i);
 		while (g_shell.pip == -1 && (ex.i < g_shell.nb_fd ||
 					(g_shell.nb_fd == 0 && ex.i == 0)))
 			ex = ft_exe_no_pipe(ex);
@@ -274,10 +275,33 @@ int			ft_ex_2(t_exe ex)
 	return (1);
 }
 
+char		*ft_check_redir_in_av(char *buf, int *check)
+{
+	char	*tmp;
+	int		i;
+
+	i = 0;
+	while (buf[i])
+	{
+		if (buf[i] == '>')
+		{
+			if (!buf[i + 1] || (buf[i + 1] == '>' && !buf[i + 2]))
+				*check = 1;
+			buf[i] = '\0';
+			tmp = ft_strdup(buf);
+			ft_strdel(&buf);
+			return (tmp);
+		}
+		i++;
+	}
+	return (buf);
+}
+
 char		**ft_del_redir_av(char **av)
 {
 	int		i;
 	int		k;
+	int		check;
 	char	**new;
 
 	i = 0;
@@ -287,9 +311,11 @@ char		**ft_del_redir_av(char **av)
 		exit(-1000);
 	i = 0;
 	k = 0;
+	check = 0;
 	while (av[i])
 	{
-		if (!ft_strncmp(av[i], ">", ft_strlen(av[i])))
+		if (!ft_strncmp(av[i], ">", ft_strlen(av[i])) ||
+									!ft_strncmp(av[i], ">>", ft_strlen(av[i])))
 		{
 			ft_strdel(&av[i]);
 			if (av[++i])
@@ -298,8 +324,13 @@ char		**ft_del_redir_av(char **av)
 				i++;
 			}
 		}
+		else if ((av[i][0] == '>' && ft_strlen(av[i]) > 1) || check == 1)
+		{
+			check = 0;
+			ft_strdel(&av[i++]);
+		}
 		else
-			new[k++] = av[i++];
+			new[k++] = ft_check_redir_in_av(av[i++], &check);
 	}
 	new[k] = NULL;
 	return (new);
